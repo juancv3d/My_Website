@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from os import path
+from flask_login import LoginManager
 
 db = SQLAlchemy()
 DB_NAME = 'database.db'
@@ -15,6 +16,18 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_NAME}'
     # Initialize the database
     db.init_app(app)
+
+    # Initialize the login manager
+    login_manager = LoginManager()
+    # This will redirect users to the login page
+    login_manager.login_view = 'auth.login'
+    # Initialize the login manager
+    login_manager.init_app(app)
+
+    @login_manager.user_loader
+    def load_user(id):
+        return User.query.get(int(id))
+
     # Import the views
     from .views import views
     from .auth import auth
