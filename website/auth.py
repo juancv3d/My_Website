@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask.globals import request
-from .models import User, Note
+from .models import User
 from werkzeug.security import generate_password_hash, check_password_hash
 from website import db
 from flask_login import login_user, logout_user, login_required, current_user
@@ -26,10 +26,11 @@ def login():
         else:
             flash('User not found', category='error')
 
-    return render_template('login.html', boolean=True)
+    return render_template('login.html', user=current_user)
 
 
 @auth.route('/logout')
+@login_required
 def logout():
     logout_user()
     return redirect(url_for('auth.login'))
@@ -58,11 +59,12 @@ def sign_up():
             flash('Passwords do not match.', category='error')
         else:
             # We create the account and use the generate_password_hash function to hash the password and store it safely in the database.
-            new_user = User(username=username, email=email, password=generate_password_hash(
-                password, method='sha256'))
+            new_user = User(username=username,
+                            email=email,
+                            password=generate_password_hash(password, method='sha256'))
             db.session.add(new_user)
             db.session.commit()
             flash('User created successfully.', category='success')
             return redirect(url_for('views.home'))
 
-    return render_template('sign_up.html')
+    return render_template('sign_up.html', user=current_user)
