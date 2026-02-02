@@ -3,7 +3,7 @@ import { FaGithub, FaLinkedin, FaEnvelope, FaInstagram } from 'react-icons/fa';
 const links = [
   {
     name: 'GitHub',
-    url: 'https://github.com/juan-snowx',
+    url: 'https://github.com/juancv3d',
     icon: FaGithub,
   },
   {
@@ -18,7 +18,7 @@ const links = [
   },
   {
     name: 'Email',
-    url: 'mailto:juancvilla96@gmail.com',
+    url: 'mailto:juan.villarreal@snowflake.com',
     icon: FaEnvelope,
   },
 ];
