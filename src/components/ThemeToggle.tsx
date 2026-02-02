@@ -1,4 +1,5 @@
 import { FaSun, FaMoon } from 'react-icons/fa';
+import { useSound } from '../hooks/useSound';
 
 interface ThemeToggleProps {
   darkMode: boolean;
@@ -6,10 +7,18 @@ interface ThemeToggleProps {
 }
 
 function ThemeToggle({ darkMode, toggleTheme }: ThemeToggleProps) {
+  const { playToggle, playHover } = useSound();
+
+  const handleClick = () => {
+    playToggle(!darkMode);
+    toggleTheme();
+  };
+
   return (
     <button
       className="theme-toggle"
-      onClick={toggleTheme}
+      onClick={handleClick}
+      onMouseEnter={playHover}
       aria-label={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
       title={`Currently in ${darkMode ? 'dark' : 'light'} mode, switch to ${darkMode ? 'light' : 'dark'} mode`}
     >

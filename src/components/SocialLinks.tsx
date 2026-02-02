@@ -1,4 +1,5 @@
 import { FaGithub, FaLinkedin, FaEnvelope, FaInstagram } from 'react-icons/fa';
+import { useSound } from '../hooks/useSound';
 
 const links = [
   {
@@ -24,6 +25,8 @@ const links = [
 ];
 
 function SocialLinks() {
+  const { playHover, playClick } = useSound();
+
   return (
     <nav className="social-links" aria-label="Social links">
       {links.map((link) => (
@@ -34,6 +37,8 @@ function SocialLinks() {
           rel="noopener noreferrer"
           aria-label={link.name}
           title={link.name}
+          onMouseEnter={playHover}
+          onClick={playClick}
         >
           <link.icon />
         </a>
