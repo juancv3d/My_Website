@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
-import ParticlesBackground from './components/ParticlesBackground';
-import ThemeToggle from './components/ThemeToggle';
-import SocialLinks from './components/SocialLinks';
+import { ParticlesBackground, ThemeToggle, SocialLinks } from './components';
 
 function App() {
   const [darkMode, setDarkMode] = useState(() => {

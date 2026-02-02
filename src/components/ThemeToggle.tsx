@@ -1,5 +1,5 @@
 import { FaSun, FaMoon } from 'react-icons/fa';
-import { useSound } from '../hooks/useSound';
+import { useSound } from '../hooks';
 
 interface ThemeToggleProps {
   darkMode: boolean;

@@ -1,5 +1,5 @@
 import { FaGithub, FaLinkedin, FaEnvelope, FaInstagram } from 'react-icons/fa';
-import { useSound } from '../hooks/useSound';
+import { useSound } from '../hooks';
 
 const links = [
   {

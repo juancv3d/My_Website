@@ -8,8 +8,9 @@ Personal website built with React, TypeScript, and Vite.
 
 - Interactive particle background with blue theme
 - Dark/Light mode toggle
+- Subtle sound effects on interactions
 - Responsive design
-- Social links (GitHub, LinkedIn, Email)
+- Social links (GitHub, LinkedIn, Instagram, Email)
 
 ## Tech Stack
 
@@ -18,6 +19,28 @@ Personal website built with React, TypeScript, and Vite.
 - Vite
 - tsParticles
 - React Icons
+- Web Audio API (sounds)
+
+## Project Structure
+
+```
+src/
+├── components/          # React components
+│   ├── ParticlesBackground.tsx
+│   ├── SocialLinks.tsx
+│   ├── ThemeToggle.tsx
+│   └── index.ts
+├── hooks/               # Custom React hooks
+│   ├── useSound.ts
+│   └── index.ts
+├── styles/              # CSS styles
+│   └── index.css
+├── types/               # TypeScript types
+│   └── index.ts
+├── App.tsx              # Main app component
+├── main.tsx             # Entry point
+└── vite-env.d.ts
+```
 
 ## Getting Started
 
@@ -44,12 +67,9 @@ npm run dev
 npm run build
 ```
 
-## Deploy
+## Live Site
 
-This site can be deployed to:
-- Vercel
-- Netlify
-- GitHub Pages
+[https://juancamilo.dev](https://juancamilo.dev)
 
 ## License
 
