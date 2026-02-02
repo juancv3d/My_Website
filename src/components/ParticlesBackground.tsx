@@ -27,7 +27,7 @@ function ParticlesBackground({ darkMode }: ParticlesBackgroundProps) {
       detectRetina: true,
       particles: {
         number: {
-          value: 100,
+          value: 120, // Más partículas
           density: {
             enable: true,
             width: 800,
@@ -35,45 +35,66 @@ function ParticlesBackground({ darkMode }: ParticlesBackgroundProps) {
           },
         },
         color: {
-          value: [
-            '#0066ff', // Azul brillante
-            '#00aaff', // Azul cielo
-            '#0044cc', // Azul oscuro
-            '#00ccff', // Cian
-            '#3399ff', // Azul medio
-            '#0088ff', // Azul eléctrico
-          ],
+          value: darkMode 
+            ? ['#0066ff', '#00aaff', '#0044cc', '#00ccff', '#3399ff', '#66bbff', '#99ddff']
+            : ['#0044aa', '#0066cc', '#0088ee', '#00aaff'],
         },
         shape: {
           type: 'circle',
         },
         opacity: {
-          value: 0.9,
+          value: { min: 0.6, max: 1 },
+          animation: {
+            enable: true,
+            speed: 0.5,
+            sync: false,
+          },
         },
         size: {
-          value: {
-            min: 2,
-            max: 4,
+          value: { min: 2, max: 5 },
+          animation: {
+            enable: true,
+            speed: 2,
+            sync: false,
           },
         },
         links: {
           enable: true,
-          distance: 75,
-          color: darkMode ? '#6699cc' : '#336699',
-          opacity: 0.9,
-          width: 1,
+          distance: 120, // Mayor distancia = más conexiones
+          color: darkMode ? '#4488cc' : '#336699',
+          opacity: 0.7,
+          width: 1.2,
+          triangles: {
+            enable: true, // Triángulos entre conexiones
+            color: darkMode ? '#223355' : '#ddeeff',
+            opacity: 0.1,
+          },
         },
         move: {
           enable: true,
-          speed: 2,
+          speed: 1.5,
           direction: 'none',
-          random: false,
+          random: true,
           straight: false,
           outModes: {
             default: 'bounce',
           },
           attract: {
-            enable: false,
+            enable: true,
+            rotate: {
+              x: 600,
+              y: 1200,
+            },
+          },
+        },
+        twinkle: {
+          particles: {
+            enable: true,
+            frequency: 0.03,
+            opacity: 1,
+            color: {
+              value: '#ffffff',
+            },
           },
         },
       },
@@ -82,7 +103,12 @@ function ParticlesBackground({ darkMode }: ParticlesBackgroundProps) {
         events: {
           onHover: {
             enable: true,
-            mode: 'repulse',
+            mode: ['grab', 'bubble'], // Grab + Bubble al pasar mouse
+            parallax: {
+              enable: true,
+              force: 60,
+              smooth: 10,
+            },
           },
           onClick: {
             enable: true,
@@ -93,32 +119,25 @@ function ParticlesBackground({ darkMode }: ParticlesBackgroundProps) {
           },
         },
         modes: {
-          attract: {
-            distance: 100,
-            duration: 1,
-            speed: 5,
+          grab: {
+            distance: 200,
+            links: {
+              opacity: 1,
+              color: '#00ffff',
+            },
           },
           bubble: {
-            distance: 400,
-            size: 40,
+            distance: 150,
+            size: 8,
             duration: 2,
             opacity: 0.8,
           },
-          grab: {
-            distance: 400,
-            links: {
-              opacity: 1,
-            },
-          },
           push: {
-            quantity: 3,
-          },
-          remove: {
-            quantity: 2,
+            quantity: 5,
           },
           repulse: {
-            distance: 100,
-            duration: 1,
+            distance: 150,
+            duration: 0.4,
           },
         },
       },
