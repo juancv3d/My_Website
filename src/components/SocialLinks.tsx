@@ -1,4 +1,4 @@
-import { FaGithub, FaLinkedin, FaEnvelope } from 'react-icons/fa';
+import { FaGithub, FaLinkedin, FaEnvelope, FaInstagram } from 'react-icons/fa';
 
 const links = [
   {
@@ -12,8 +12,13 @@ const links = [
     icon: FaLinkedin,
   },
   {
+    name: 'Instagram',
+    url: 'https://www.instagram.com/juancv3d/',
+    icon: FaInstagram,
+  },
+  {
     name: 'Email',
-    url: 'mailto:hello@juancamilo.dev',
+    url: 'mailto:juancvilla96@gmail.com',
     icon: FaEnvelope,
   },
 ];
