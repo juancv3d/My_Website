@@ -1,23 +1,17 @@
-import { useState, useEffect } from 'react';
-import { ParticlesBackground, ThemeToggle, SocialLinks } from './components';
+import { BackgroundProvider, useBackground } from './context';
+import { ThemeToggle, SocialLinks, BackgroundSelector, BackgroundRenderer } from './components';
 
-function App() {
-  const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem('darkMode');
-    return saved !== null ? JSON.parse(saved) : true;
-  });
-
-  useEffect(() => {
-    localStorage.setItem('darkMode', JSON.stringify(darkMode));
-    document.body.classList.toggle('light-mode', !darkMode);
-  }, [darkMode]);
-
-  const toggleTheme = () => setDarkMode(!darkMode);
+function AppContent() {
+  const { darkMode } = useBackground();
 
   return (
     <div className={`app ${darkMode ? 'dark' : 'light'}`}>
-      <ParticlesBackground darkMode={darkMode} />
-      <ThemeToggle darkMode={darkMode} toggleTheme={toggleTheme} />
+      <BackgroundRenderer />
+      
+      <div className="controls">
+        <ThemeToggle />
+        <BackgroundSelector />
+      </div>
       
       <main className="content">
         <h1 className="name">Juan Camilo Villarreal Rios</h1>
@@ -25,6 +19,14 @@ function App() {
         <SocialLinks />
       </main>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <BackgroundProvider>
+      <AppContent />
+    </BackgroundProvider>
   );
 }
 

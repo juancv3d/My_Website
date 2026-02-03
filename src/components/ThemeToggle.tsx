@@ -1,17 +1,14 @@
 import { FaSun, FaMoon } from 'react-icons/fa';
 import { useSound } from '../hooks';
+import { useBackground } from '../context';
 
-interface ThemeToggleProps {
-  darkMode: boolean;
-  toggleTheme: () => void;
-}
-
-function ThemeToggle({ darkMode, toggleTheme }: ThemeToggleProps) {
+function ThemeToggle() {
+  const { darkMode, toggleDarkMode } = useBackground();
   const { playToggle, playHover } = useSound();
 
   const handleClick = () => {
     playToggle(!darkMode);
-    toggleTheme();
+    toggleDarkMode();
   };
 
   return (
