@@ -71,6 +71,16 @@ npm run build
 
 [https://juancamilo.dev](https://juancamilo.dev)
 
+## Next Steps
+
+- **Personal AI Agent** - Build an intelligent assistant connected to my personal data ecosystem:
+  - Work documents and notes
+  - Calendar and meetings
+  - Tickets and tasks (Jira, Linear, etc.)
+  - Emails and communications
+  
+  The agent will help me prepare for meetings, summarize context from past interactions, suggest action items, and provide proactive reminders based on my workflow patterns.
+
 ## License
 
 MIT
