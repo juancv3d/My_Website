@@ -6,6 +6,22 @@ interface FluidBackgroundProps {
   darkMode: boolean;
 }
 
+// Hook to detect mobile devices
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768 || 'ontouchstart' in window);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
+  return isMobile;
+};
+
 // Vertex shader
 const vertexShader = `
   varying vec2 vUv;
@@ -381,6 +397,7 @@ const FluidMesh = ({ darkMode, clickBlobs }: FluidMeshProps) => {
 const FluidBackground = ({ darkMode }: FluidBackgroundProps) => {
   const [clickBlobs, setClickBlobs] = useState<ClickBlob[]>([]);
   const startTimeRef = useRef(performance.now() / 1000);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const handleClick = (event: MouseEvent) => {
@@ -396,17 +413,46 @@ const FluidBackground = ({ darkMode }: FluidBackgroundProps) => {
       
       setClickBlobs(prev => [...prev.slice(-7), { x, y, time }]);
     };
+    
+    // Also handle touch events for mobile
+    const handleTouch = (event: TouchEvent) => {
+      const target = event.target as HTMLElement;
+      if (target.closest('.controls') || target.closest('.glass-selector') || target.closest('button')) {
+        return;
+      }
+      
+      const touch = event.touches[0];
+      if (touch) {
+        const x = touch.clientX / window.innerWidth;
+        const y = 1 - touch.clientY / window.innerHeight;
+        const time = performance.now() / 1000 - startTimeRef.current;
+        
+        setClickBlobs(prev => [...prev.slice(-7), { x, y, time }]);
+      }
+    };
 
     window.addEventListener('click', handleClick);
-    return () => window.removeEventListener('click', handleClick);
-  }, []);
+    if (isMobile) {
+      window.addEventListener('touchstart', handleTouch, { passive: true });
+    }
+    
+    return () => {
+      window.removeEventListener('click', handleClick);
+      window.removeEventListener('touchstart', handleTouch);
+    };
+  }, [isMobile]);
 
   return (
     <div className="background-container fluid-background">
       <Canvas
         camera={{ position: [0, 0, 1], fov: 75 }}
         style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
-        gl={{ antialias: true, alpha: false }}
+        gl={{ 
+          antialias: !isMobile, 
+          alpha: false,
+          powerPreference: 'high-performance',
+        }}
+        dpr={isMobile ? 1 : [1, 1.5]}
       >
         <FluidMesh darkMode={darkMode} clickBlobs={clickBlobs} />
       </Canvas>

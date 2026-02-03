@@ -7,8 +7,25 @@ interface ParticlesBackgroundProps {
   darkMode: boolean;
 }
 
+// Hook to detect mobile devices
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768 || 'ontouchstart' in window);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
+  return isMobile;
+};
+
 function ParticlesBackground({ darkMode }: ParticlesBackgroundProps) {
   const [init, setInit] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     initParticlesEngine(async (engine) => {
@@ -23,11 +40,11 @@ function ParticlesBackground({ darkMode }: ParticlesBackgroundProps) {
       fullScreen: {
         enable: false,
       },
-      fpsLimit: 90,
-      detectRetina: true,
+      fpsLimit: isMobile ? 30 : 90,
+      detectRetina: !isMobile,
       particles: {
         number: {
-          value: 120, // Más partículas
+          value: isMobile ? 40 : 120,
           density: {
             enable: true,
             width: 800,
@@ -102,10 +119,10 @@ function ParticlesBackground({ darkMode }: ParticlesBackgroundProps) {
         detectsOn: 'canvas',
         events: {
           onHover: {
-            enable: true,
-            mode: ['grab', 'bubble'], // Grab + Bubble al pasar mouse
+            enable: !isMobile,
+            mode: ['grab', 'bubble'],
             parallax: {
-              enable: true,
+              enable: !isMobile,
               force: 60,
               smooth: 10,
             },
@@ -133,7 +150,7 @@ function ParticlesBackground({ darkMode }: ParticlesBackgroundProps) {
             opacity: 0.8,
           },
           push: {
-            quantity: 5,
+            quantity: isMobile ? 2 : 5,
           },
           repulse: {
             distance: 150,
@@ -147,7 +164,7 @@ function ParticlesBackground({ darkMode }: ParticlesBackgroundProps) {
         },
       },
     }),
-    [darkMode]
+    [darkMode, isMobile]
   );
 
   if (!init) {

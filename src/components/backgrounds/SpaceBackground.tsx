@@ -1,10 +1,26 @@
-import { useRef, useMemo, useEffect } from 'react';
+import { useRef, useMemo, useEffect, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
 interface SpaceBackgroundProps {
   darkMode: boolean;
 }
+
+// Hook to detect mobile devices
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768 || 'ontouchstart' in window);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
+  return isMobile;
+};
 
 // ============================================
 // FULLSCREEN NEBULA - Covers entire viewport
@@ -244,9 +260,9 @@ const starFragmentShader = `
   }
 `;
 
-const Stars = ({ darkMode, mousePos }: { darkMode: boolean; mousePos: React.MutableRefObject<{ x: number; y: number }> }) => {
+const Stars = ({ darkMode, mousePos, isMobile }: { darkMode: boolean; mousePos: React.MutableRefObject<{ x: number; y: number }>; isMobile: boolean }) => {
   const pointsRef = useRef<THREE.Points>(null);
-  const count = 500;
+  const count = isMobile ? 200 : 500;
   
   const { positions, sizes, brightnesses, twinklePhases } = useMemo(() => {
     const positions = new Float32Array(count * 3);
@@ -265,7 +281,7 @@ const Stars = ({ darkMode, mousePos }: { darkMode: boolean; mousePos: React.Muta
     }
     
     return { positions, sizes, brightnesses, twinklePhases };
-  }, []);
+  }, [count]);
 
   const uniforms = useMemo(() => ({
     uTime: { value: 0 },
@@ -1194,10 +1210,12 @@ const Camera = ({ mousePos }: { mousePos: React.MutableRefObject<{ x: number; y:
 // ============================================
 // SCENE
 // ============================================
-const SpaceScene = ({ darkMode }: SpaceBackgroundProps) => {
+const SpaceScene = ({ darkMode, isMobile }: SpaceBackgroundProps & { isMobile: boolean }) => {
   const mousePos = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
+    if (isMobile) return; // Disable mouse tracking on mobile
+    
     const handleMouseMove = (event: MouseEvent) => {
       mousePos.current.x = (event.clientX / window.innerWidth - 0.5) * 2;
       mousePos.current.y = -(event.clientY / window.innerHeight - 0.5) * 2;
@@ -1205,19 +1223,19 @@ const SpaceScene = ({ darkMode }: SpaceBackgroundProps) => {
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
     return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+  }, [isMobile]);
 
   return (
     <>
-      <Camera mousePos={mousePos} />
+      {!isMobile && <Camera mousePos={mousePos} />}
       <FullscreenNebula darkMode={darkMode} />
-      <Constellations darkMode={darkMode} />
-      <Stars darkMode={darkMode} mousePos={mousePos} />
-      <FocalStars darkMode={darkMode} />
+      {!isMobile && <Constellations darkMode={darkMode} />}
+      <Stars darkMode={darkMode} mousePos={mousePos} isMobile={isMobile} />
+      {!isMobile && <FocalStars darkMode={darkMode} />}
       <CelestialBody darkMode={darkMode} />
-      <Planets darkMode={darkMode} />
-      <ShootingStar darkMode={darkMode} delay={3} />
-      <ShootingStar darkMode={darkMode} delay={10} />
+      {!isMobile && <Planets darkMode={darkMode} />}
+      {!isMobile && <ShootingStar darkMode={darkMode} delay={3} />}
+      {!isMobile && <ShootingStar darkMode={darkMode} delay={10} />}
     </>
   );
 };
@@ -1226,6 +1244,8 @@ const SpaceScene = ({ darkMode }: SpaceBackgroundProps) => {
 // MAIN COMPONENT
 // ============================================
 const SpaceBackground = ({ darkMode }: SpaceBackgroundProps) => {
+  const isMobile = useIsMobile();
+  
   return (
     <div 
       style={{
@@ -1239,25 +1259,25 @@ const SpaceBackground = ({ darkMode }: SpaceBackgroundProps) => {
       }}
     >
       <Canvas
-        key={darkMode ? 'dark' : 'light'}
-        camera={{ position: [0, 0, 5], fov: 60 }}
+        key={`${darkMode ? 'dark' : 'light'}-${isMobile ? 'mobile' : 'desktop'}`}
+        camera={{ position: [0, 0, 5], fov: isMobile ? 70 : 60 }}
         style={{ 
           display: 'block',
           width: '100%', 
           height: '100%',
         }}
         gl={{ 
-          antialias: true,
+          antialias: !isMobile,
           alpha: false,
           powerPreference: 'high-performance',
           stencil: false,
           depth: true,
         }}
-        dpr={[1, 1.5]}
+        dpr={isMobile ? 1 : [1, 1.5]}
         frameloop="always"
         flat
       >
-        <SpaceScene darkMode={darkMode} />
+        <SpaceScene darkMode={darkMode} isMobile={isMobile} />
       </Canvas>
     </div>
   );
