@@ -12,6 +12,22 @@ interface ThemeOption {
   label: string;
 }
 
+// Hook to detect mobile and get item height
+const useItemHeight = () => {
+  const [itemHeight, setItemHeight] = useState(36);
+  
+  useEffect(() => {
+    const updateHeight = () => {
+      setItemHeight(window.innerWidth <= 480 ? 32 : 36);
+    };
+    updateHeight();
+    window.addEventListener('resize', updateHeight);
+    return () => window.removeEventListener('resize', updateHeight);
+  }, []);
+  
+  return itemHeight;
+};
+
 const themeOptions: ThemeOption[] = [
   { id: 'particles', icon: <HiSparkles />, label: 'Particles' },
   { id: 'space', icon: <IoMdPlanet />, label: 'Space' },
@@ -24,6 +40,7 @@ const BackgroundSelector = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [sliderPosition, setSliderPosition] = useState(0);
+  const itemHeight = useItemHeight();
 
   const currentIndex = themeOptions.findIndex((t) => t.id === backgroundTheme);
 
@@ -115,7 +132,6 @@ const BackgroundSelector = () => {
   }, [isDragging, sliderPosition]);
 
   // Calculate thumb position within the glass container
-  const itemHeight = 36; // Height of each option
   const thumbTop = sliderPosition * itemHeight;
 
   return (
