@@ -1,4 +1,4 @@
-import { useRef, useMemo, useEffect, useState } from 'react';
+import { useRef, useMemo, useEffect, useState, useCallback } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -236,6 +236,7 @@ const starFragmentShader = `
   
   uniform float uTime;
   uniform vec3 uColor;
+  uniform float uSharpness; // 0.0 = soft/diffuse, 1.0 = sharp/crisp
   
   void main() {
     vec2 center = gl_PointCoord - 0.5;
@@ -243,26 +244,43 @@ const starFragmentShader = `
     
     if (dist > 0.5) discard;
     
-    // Soft glow falloff
-    float alpha = 1.0 - smoothstep(0.0, 0.5, dist);
-    alpha = pow(alpha, 1.5);
+    // Adjustable falloff based on sharpness
+    // Sharp: steeper falloff, smaller glow radius
+    // Soft: gradual falloff, larger glow
+    float falloffStart = mix(0.0, 0.15, uSharpness);
+    float falloffEnd = mix(0.5, 0.35, uSharpness);
+    float alpha = 1.0 - smoothstep(falloffStart, falloffEnd, dist);
+    
+    // Sharper exponent for mobile
+    float exponent = mix(1.5, 2.5, uSharpness);
+    alpha = pow(alpha, exponent);
     
     // Subtle twinkle
     float twinkle = 0.8 + 0.2 * sin(uTime * 1.2 + vTwinklePhase);
     
     vec3 color = uColor * vBrightness * twinkle;
     
-    // Bright core
-    float core = 1.0 - smoothstep(0.0, 0.2, dist);
-    color += vec3(1.0) * core * 0.4;
+    // Bright core - larger and brighter on sharp mode
+    float coreSize = mix(0.2, 0.12, uSharpness);
+    float coreStrength = mix(0.4, 0.7, uSharpness);
+    float core = 1.0 - smoothstep(0.0, coreSize, dist);
+    color += vec3(1.0) * core * coreStrength;
     
     gl_FragColor = vec4(color, alpha * vBrightness);
   }
 `;
 
-const Stars = ({ darkMode, mousePos, isMobile }: { darkMode: boolean; mousePos: React.MutableRefObject<{ x: number; y: number }>; isMobile: boolean }) => {
+const Stars = ({ darkMode, mousePos, isMobile, blackHole }: { 
+  darkMode: boolean; 
+  mousePos: React.MutableRefObject<{ x: number; y: number }>; 
+  isMobile: boolean;
+  blackHole?: BlackHoleState;
+}) => {
   const pointsRef = useRef<THREE.Points>(null);
   const count = isMobile ? 350 : 500;
+  
+  // Store original positions for gravity effect
+  const originalPositions = useRef<Float32Array | null>(null);
   
   const { positions, sizes, brightnesses, twinklePhases } = useMemo(() => {
     const positions = new Float32Array(count * 3);
@@ -280,29 +298,120 @@ const Stars = ({ darkMode, mousePos, isMobile }: { darkMode: boolean; mousePos: 
       twinklePhases[i] = Math.random() * Math.PI * 2;
     }
     
+    // Store original positions
+    originalPositions.current = new Float32Array(positions);
+    
     return { positions, sizes, brightnesses, twinklePhases };
   }, [count]);
 
   const uniforms = useMemo(() => ({
     uTime: { value: 0 },
     uColor: { value: new THREE.Color(darkMode ? '#ffffff' : '#ffeecc') },
+    uSharpness: { value: isMobile ? 1.0 : 0.0 },
   }), []);
 
   useEffect(() => {
     if (pointsRef.current) {
       const material = pointsRef.current.material as THREE.ShaderMaterial;
       material.uniforms.uColor.value = new THREE.Color(darkMode ? '#ffffff' : '#ffeecc');
+      material.uniforms.uSharpness.value = isMobile ? 1.0 : 0.0;
     }
-  }, [darkMode]);
+  }, [darkMode, isMobile]);
 
   useFrame((state) => {
-    if (pointsRef.current) {
-      const material = pointsRef.current.material as THREE.ShaderMaterial;
-      material.uniforms.uTime.value = state.clock.elapsedTime;
+    if (!pointsRef.current) return;
+    
+    const material = pointsRef.current.material as THREE.ShaderMaterial;
+    material.uniforms.uTime.value = state.clock.elapsedTime;
+    
+    // Parallax offset
+    const parallaxX = mousePos.current.x * 0.15;
+    const parallaxY = mousePos.current.y * 0.1;
+    pointsRef.current.position.x = parallaxX;
+    pointsRef.current.position.y = parallaxY;
+    
+    // Black hole gravity effect - continuous attraction while held
+    const geometry = pointsRef.current.geometry;
+    const positionAttr = geometry.getAttribute('position') as THREE.BufferAttribute;
+    
+    if (blackHole?.active && originalPositions.current) {
+      // Adjust black hole position to account for star parallax offset
+      // Stars are in local space, so we need black hole position in that space
+      const bhX = blackHole.position.x - parallaxX;
+      const bhY = blackHole.position.y - parallaxY;
       
-      // Parallax
-      pointsRef.current.position.x = mousePos.current.x * 0.15;
-      pointsRef.current.position.y = mousePos.current.y * 0.1;
+      for (let i = 0; i < count; i++) {
+        // Get current position (not original - for continuous attraction)
+        const cx = positionAttr.getX(i);
+        const cy = positionAttr.getY(i);
+        const oz = originalPositions.current[i * 3 + 2];
+        
+        // Calculate distance to black hole (in local star space)
+        const dx = bhX - cx;
+        const dy = bhY - cy;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        
+        // Strong gravity - stars WILL reach the center
+        const maxDist = 12;
+        
+        // Pull speed increases as stars get closer
+        let pullSpeed = 0.04;
+        if (dist < 5) pullSpeed = 0.08;
+        if (dist < 3) pullSpeed = 0.12;
+        if (dist < 1.5) pullSpeed = 0.18;
+        if (dist < 0.5) pullSpeed = 0.35;
+        
+        // Only apply gravity within max distance
+        if (dist < maxDist && dist > 0.35) {
+          // Normalize direction
+          const dirX = dx / dist;
+          const dirY = dy / dist;
+          
+          // Move directly toward black hole center
+          const moveX = dirX * pullSpeed * Math.min(dist, 1);
+          const moveY = dirY * pullSpeed * Math.min(dist, 1);
+          
+          // Add slight spiral for visual interest
+          const spiralStrength = 0.08 * pullSpeed;
+          const perpX = -dirY * spiralStrength;
+          const perpY = dirX * spiralStrength;
+          
+          positionAttr.setXYZ(i, cx + moveX + perpX, cy + moveY + perpY, oz);
+        } else if (dist <= 0.35) {
+          // Star reached event horizon - hide it
+          positionAttr.setXYZ(i, bhX, bhY, -100);
+        }
+      }
+      
+      positionAttr.needsUpdate = true;
+    } else if (originalPositions.current) {
+      // Smoothly return to original positions when black hole is released
+      let needsUpdate = false;
+      
+      for (let i = 0; i < count; i++) {
+        const cx = positionAttr.getX(i);
+        const cy = positionAttr.getY(i);
+        const ox = originalPositions.current[i * 3];
+        const oy = originalPositions.current[i * 3 + 1];
+        const oz = originalPositions.current[i * 3 + 2];
+        
+        // Smooth return (lerp)
+        const returnSpeed = 0.05;
+        const newX = cx + (ox - cx) * returnSpeed;
+        const newY = cy + (oy - cy) * returnSpeed;
+        
+        // Only update if significantly different
+        if (Math.abs(newX - ox) > 0.001 || Math.abs(newY - oy) > 0.001) {
+          positionAttr.setXYZ(i, newX, newY, oz);
+          needsUpdate = true;
+        } else {
+          positionAttr.setXYZ(i, ox, oy, oz);
+        }
+      }
+      
+      if (needsUpdate) {
+        positionAttr.needsUpdate = true;
+      }
     }
   });
 
@@ -670,7 +779,7 @@ const Sun = () => {
   );
 };
 
-const CelestialBody = ({ darkMode }: { darkMode: boolean }) => {
+const CelestialBody = ({ darkMode, isMobile }: { darkMode: boolean; isMobile: boolean }) => {
   const groupRef = useRef<THREE.Group>(null);
 
   const glowConfig = useMemo(() => {
@@ -687,15 +796,22 @@ const CelestialBody = ({ darkMode }: { darkMode: boolean }) => {
     }
   }, [darkMode]);
 
+  // Mobile: centered at top, Desktop: top-right
+  const position: [number, number, number] = isMobile 
+    ? [1.5, 3.2, -6]  // Mobile: upper right, visible but not blocking content
+    : [3.5, 1.8, -6]; // Desktop: original position
+  
+  const scale = isMobile ? 0.85 : 1; // Slightly smaller on mobile
+
   useFrame((state) => {
     if (groupRef.current) {
-      const scale = 1 + Math.sin(state.clock.elapsedTime * 0.5) * 0.02;
-      groupRef.current.scale.setScalar(scale);
+      const pulse = 1 + Math.sin(state.clock.elapsedTime * 0.5) * 0.02;
+      groupRef.current.scale.setScalar(scale * pulse);
     }
   });
 
   return (
-    <group ref={groupRef} position={[3.5, 1.8, -6]} key={darkMode ? 'moon' : 'sun'}>
+    <group ref={groupRef} position={position} key={darkMode ? 'moon' : 'sun'}>
       {/* Outer glow */}
       <mesh>
         <sphereGeometry args={[2.5, 16, 16]} />
@@ -804,7 +920,7 @@ interface PlanetConfig {
   hasRings?: boolean;
 }
 
-const Planet = ({ config }: { config: PlanetConfig }) => {
+const Planet = ({ config, centerPos }: { config: PlanetConfig; centerPos: [number, number, number] }) => {
   const groupRef = useRef<THREE.Group>(null);
   const meshRef = useRef<THREE.Mesh>(null);
 
@@ -818,9 +934,10 @@ const Planet = ({ config }: { config: PlanetConfig }) => {
     if (!groupRef.current) return;
     
     const time = state.clock.elapsedTime * config.orbitSpeed + config.startAngle;
-    groupRef.current.position.x = Math.cos(time) * config.orbitRadius;
-    groupRef.current.position.y = config.position[1] + Math.sin(time * 0.7) * 0.5;
-    groupRef.current.position.z = config.position[2] + Math.sin(time) * config.orbitRadius * 0.3;
+    // Orbit around the celestial body (sun/moon)
+    groupRef.current.position.x = centerPos[0] + Math.cos(time) * config.orbitRadius;
+    groupRef.current.position.y = centerPos[1] + Math.sin(time * 0.5) * config.orbitRadius * 0.3;
+    groupRef.current.position.z = centerPos[2] + Math.sin(time) * config.orbitRadius * 0.4 - 2;
     
     if (meshRef.current) {
       meshRef.current.rotation.y += 0.008;
@@ -864,45 +981,107 @@ const Planet = ({ config }: { config: PlanetConfig }) => {
   );
 };
 
-const Planets = ({ darkMode }: { darkMode: boolean }) => {
-  const configs: PlanetConfig[] = useMemo(() => [
-    {
-      position: [0, 0.3, -8],
-      orbitRadius: 5,
-      orbitSpeed: 0.08,
-      size: 0.18,
-      color1: darkMode ? '#5577cc' : '#cc4433',
-      color2: darkMode ? '#3355aa' : '#ff6644',
-      seed: 1.0,
-      startAngle: 0,
-    },
-    {
-      position: [0, -0.2, -10],
-      orbitRadius: 7,
-      orbitSpeed: 0.05,
-      size: 0.28,
-      color1: darkMode ? '#aa8866' : '#ddaa55',
-      color2: darkMode ? '#887755' : '#cc9944',
-      seed: 2.0,
-      startAngle: 2.5,
-      hasRings: true, // Saturn-like planet
-    },
-    {
-      position: [0, 0.6, -12],
-      orbitRadius: 9,
-      orbitSpeed: 0.03,
-      size: 0.12,
-      color1: darkMode ? '#55aa99' : '#bb3355',
-      color2: darkMode ? '#44cc88' : '#ff5577',
-      seed: 3.0,
-      startAngle: 4.8,
-    },
-  ], [darkMode]);
+const Planets = ({ darkMode, isMobile }: { darkMode: boolean; isMobile: boolean }) => {
+  // Center position (celestial body - sun/moon)
+  const centerPos: [number, number, number] = isMobile 
+    ? [1.5, 3.2, -6]  
+    : [3.5, 1.8, -6];
+
+  const configs: PlanetConfig[] = useMemo(() => {
+    if (isMobile) {
+      // Mobile: smaller orbits and planets for vertical screen
+      return [
+        {
+          // Mars - red planet, closest orbit
+          position: [0, 0, 0],
+          orbitRadius: 1.8,
+          orbitSpeed: 0.15,
+          size: 0.15,
+          color1: '#cc4422',
+          color2: '#aa3311',
+          seed: 4.0,
+          startAngle: 0,
+        },
+        {
+          // Saturn with rings - medium orbit
+          position: [0, 0, 0],
+          orbitRadius: 3,
+          orbitSpeed: 0.08,
+          size: 0.25,
+          color1: darkMode ? '#aa8866' : '#ddaa55',
+          color2: darkMode ? '#887755' : '#cc9944',
+          seed: 2.0,
+          startAngle: 2.0,
+          hasRings: true,
+        },
+        {
+          // Blue/purple planet - outer orbit
+          position: [0, 0, 0],
+          orbitRadius: 4.2,
+          orbitSpeed: 0.05,
+          size: 0.18,
+          color1: darkMode ? '#5577cc' : '#cc4433',
+          color2: darkMode ? '#3355aa' : '#ff6644',
+          seed: 1.0,
+          startAngle: 4.2,
+        },
+      ];
+    }
+    
+    // Desktop: planets orbiting around the celestial body
+    return [
+      {
+        // Mars - red planet, closest orbit
+        position: [0, 0, 0],
+        orbitRadius: 3.5,
+        orbitSpeed: 0.1,
+        size: 0.3,
+        color1: '#cc4422',
+        color2: '#aa3311',
+        seed: 4.0,
+        startAngle: 1.0,
+      },
+      {
+        // Blue planet - medium orbit
+        position: [0, 0, 0],
+        orbitRadius: 5.5,
+        orbitSpeed: 0.07,
+        size: 0.35,
+        color1: darkMode ? '#5577cc' : '#6688dd',
+        color2: darkMode ? '#3355aa' : '#4466bb',
+        seed: 1.0,
+        startAngle: 3.5,
+      },
+      {
+        // Saturn with rings - outer orbit
+        position: [0, 0, 0],
+        orbitRadius: 8,
+        orbitSpeed: 0.04,
+        size: 0.55,
+        color1: darkMode ? '#aa8866' : '#ddaa55',
+        color2: darkMode ? '#887755' : '#cc9944',
+        seed: 2.0,
+        startAngle: 5.5,
+        hasRings: true,
+      },
+      {
+        // Small green/teal planet - furthest orbit
+        position: [0, 0, 0],
+        orbitRadius: 10,
+        orbitSpeed: 0.025,
+        size: 0.22,
+        color1: darkMode ? '#55aa99' : '#bb3355',
+        color2: darkMode ? '#44cc88' : '#ff5577',
+        seed: 3.0,
+        startAngle: 0.5,
+      },
+    ];
+  }, [darkMode, isMobile]);
 
   return (
     <>
       {configs.map((config, i) => (
-        <Planet key={i} config={config} />
+        <Planet key={i} config={config} centerPos={centerPos} />
       ))}
     </>
   );
@@ -969,19 +1148,166 @@ const ShootingStar = ({ darkMode, delay }: { darkMode: boolean; delay: number })
 };
 
 // ============================================
+// BLACK HOLE - Touch interaction (Gravitational Lensing)
+// ============================================
+interface BlackHoleState {
+  active: boolean;
+  position: THREE.Vector3;
+  startTime: number;
+  strength: number;
+}
+
+// Shader for gravitational lensing distortion effect
+const distortionVertexShader = `
+  varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+const distortionFragmentShader = `
+  uniform float uTime;
+  uniform float uStrength;
+  varying vec2 vUv;
+  
+  void main() {
+    vec2 center = vUv - 0.5;
+    float dist = length(center);
+    float angle = atan(center.y, center.x);
+    
+    // === SPINNING SPIRAL RING ===
+    // Create spiral distortion that rotates with time
+    float spiral = angle + uTime * 1.5;
+    
+    // Ring with spiral thickness variation (creates the spinning look)
+    float ringBase = smoothstep(0.16, 0.20, dist) * (1.0 - smoothstep(0.24, 0.35, dist));
+    
+    // Spiral brightness variation - makes it look like it's spinning
+    float spiralWave = sin(spiral * 2.0 + dist * 8.0) * 0.5 + 0.5;
+    float spiralWave2 = sin(spiral * 3.0 - dist * 5.0) * 0.5 + 0.5;
+    
+    // Combine for dynamic spinning effect
+    float ring = ringBase * (0.5 + spiralWave * 0.3 + spiralWave2 * 0.2);
+    
+    // Brighter streak (the bright part of the spiral)
+    float streak = pow(spiralWave, 3.0) * ringBase * 1.5;
+    
+    // === COLORS - Orange/Gold/White gradient ===
+    vec3 darkOrange = vec3(1.0, 0.4, 0.1);
+    vec3 brightOrange = vec3(1.0, 0.65, 0.2);
+    vec3 yellow = vec3(1.0, 0.9, 0.5);
+    vec3 white = vec3(1.0, 0.98, 0.95);
+    
+    // Color varies with the spiral
+    vec3 color = mix(darkOrange, brightOrange, spiralWave) * ring * 1.8;
+    color += mix(brightOrange, yellow, spiralWave2) * streak;
+    
+    // Hot white highlights on brightest parts
+    color += white * pow(streak, 2.0) * 0.8;
+    
+    float alpha = (ring + streak * 0.5) * uStrength;
+    
+    gl_FragColor = vec4(color, alpha);
+  }
+`;
+
+const BlackHole = ({ blackHole, mousePos }: { blackHole: BlackHoleState; mousePos: React.MutableRefObject<{ x: number; y: number }> }) => {
+  const groupRef = useRef<THREE.Group>(null);
+  const distortionRef = useRef<THREE.Mesh>(null);
+  const scaleRef = useRef(0);
+  const strengthRef = useRef(0);
+  
+  const uniforms = useRef({
+    uTime: { value: 0 },
+    uStrength: { value: 0 },
+  });
+
+  useFrame((state) => {
+    if (!groupRef.current) return;
+    
+    // Smooth scale transition
+    const targetScale = blackHole.active ? 1 : 0;
+    scaleRef.current += (targetScale - scaleRef.current) * 0.12;
+    
+    // Smooth strength for shader
+    const targetStrength = blackHole.active ? 1 : 0;
+    strengthRef.current += (targetStrength - strengthRef.current) * 0.1;
+    uniforms.current.uStrength.value = strengthRef.current;
+    uniforms.current.uTime.value = state.clock.elapsedTime;
+    
+    // Pulse effect while active
+    const pulse = blackHole.active ? (0.95 + Math.sin(state.clock.elapsedTime * 5) * 0.05) : 1;
+    groupRef.current.scale.setScalar(scaleRef.current * pulse);
+    
+    // Position must match where stars calculate gravity
+    // Stars are offset by parallax, so black hole visual must be too
+    const parallaxX = mousePos.current.x * 0.15;
+    const parallaxY = mousePos.current.y * 0.1;
+    groupRef.current.position.set(
+      blackHole.position.x - parallaxX,
+      blackHole.position.y - parallaxY,
+      blackHole.position.z
+    );
+    
+    groupRef.current.visible = scaleRef.current > 0.01;
+  });
+
+  return (
+    <group ref={groupRef}>
+      {/* Spinning ring glow */}
+      <mesh ref={distortionRef}>
+        <planeGeometry args={[2.8, 2.8]} />
+        <shaderMaterial
+          vertexShader={distortionVertexShader}
+          fragmentShader={distortionFragmentShader}
+          uniforms={uniforms.current}
+          transparent
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+        />
+      </mesh>
+      
+      {/* BLACK CENTER - event horizon (matches star disappear radius) */}
+      <mesh position={[0, 0, 0.02]}>
+        <circleGeometry args={[0.4, 64]} />
+        <meshBasicMaterial color="#000000" />
+      </mesh>
+    </group>
+  );
+};
+
+// ============================================
 // FOCAL STARS - Large bright stars
 // ============================================
-const FocalStars = ({ darkMode }: { darkMode: boolean }) => {
+const FocalStars = ({ darkMode, isMobile }: { darkMode: boolean; isMobile: boolean }) => {
   const groupRef = useRef<THREE.Group>(null);
   
-  const stars = useMemo(() => [
-    { pos: [-6, 3, -8], size: 0.08, color: darkMode ? '#aaccff' : '#ffddaa' },
-    { pos: [5, -2, -10], size: 0.06, color: darkMode ? '#ffccaa' : '#ffeecc' },
-    { pos: [-3, -3, -9], size: 0.05, color: darkMode ? '#aaffee' : '#ffccaa' },
-    { pos: [7, 2.5, -11], size: 0.07, color: darkMode ? '#ddaaff' : '#ffeedd' },
-    { pos: [-5, 1, -7], size: 0.04, color: darkMode ? '#ffffff' : '#ffffee' },
-    { pos: [2, 4, -12], size: 0.05, color: darkMode ? '#aaddff' : '#ffddbb' },
-  ], [darkMode]);
+  const stars = useMemo(() => {
+    if (isMobile) {
+      // Mobile: distributed for vertical screen, avoid center where text is
+      return [
+        { pos: [-2.5, 4.5, -8], size: 0.07, color: darkMode ? '#aaccff' : '#ffddaa' },
+        { pos: [2.8, -4, -9], size: 0.06, color: darkMode ? '#ffccaa' : '#ffeecc' },
+        { pos: [-2, -3.5, -10], size: 0.05, color: darkMode ? '#aaffee' : '#ffccaa' },
+        { pos: [1.5, 5, -11], size: 0.055, color: darkMode ? '#ddaaff' : '#ffeedd' },
+        { pos: [-3, 0.5, -7], size: 0.04, color: darkMode ? '#ffffff' : '#ffffee' },
+        { pos: [3, -1.5, -8], size: 0.045, color: darkMode ? '#aaddff' : '#ffddbb' },
+        { pos: [-1.5, -5.5, -9], size: 0.05, color: darkMode ? '#ccddff' : '#ffeebb' },
+        { pos: [2, 2, -10], size: 0.035, color: darkMode ? '#eeddff' : '#ffddcc' },
+      ];
+    }
+    
+    // Desktop: original
+    return [
+      { pos: [-6, 3, -8], size: 0.08, color: darkMode ? '#aaccff' : '#ffddaa' },
+      { pos: [5, -2, -10], size: 0.06, color: darkMode ? '#ffccaa' : '#ffeecc' },
+      { pos: [-3, -3, -9], size: 0.05, color: darkMode ? '#aaffee' : '#ffccaa' },
+      { pos: [7, 2.5, -11], size: 0.07, color: darkMode ? '#ddaaff' : '#ffeedd' },
+      { pos: [-5, 1, -7], size: 0.04, color: darkMode ? '#ffffff' : '#ffffee' },
+      { pos: [2, 4, -12], size: 0.05, color: darkMode ? '#aaddff' : '#ffddbb' },
+    ];
+  }, [darkMode, isMobile]);
 
   useFrame((state) => {
     if (groupRef.current) {
@@ -1224,7 +1550,11 @@ const Camera = ({ mousePos, gyroPos, isMobile }: {
 // ============================================
 // SCENE
 // ============================================
-const SpaceScene = ({ darkMode, isMobile, gyroEnabled }: SpaceBackgroundProps & { isMobile: boolean; gyroEnabled: boolean }) => {
+const SpaceScene = ({ darkMode, isMobile, gyroEnabled, blackHole }: SpaceBackgroundProps & { 
+  isMobile: boolean; 
+  gyroEnabled: boolean;
+  blackHole: BlackHoleState;
+}) => {
   const mousePos = useRef({ x: 0, y: 0 });
   const gyroPos = useRef({ x: 0, y: 0 });
 
@@ -1266,12 +1596,15 @@ const SpaceScene = ({ darkMode, isMobile, gyroEnabled }: SpaceBackgroundProps & 
       <FullscreenNebula darkMode={darkMode} />
       {/* Constellations only on desktop (too many elements) */}
       {!isMobile && <Constellations darkMode={darkMode} />}
-      <Stars darkMode={darkMode} mousePos={mousePos} isMobile={isMobile} />
-      {/* Focal stars enabled on both - simpler geometry */}
-      <FocalStars darkMode={darkMode} />
-      <CelestialBody darkMode={darkMode} />
-      {/* Planets enabled on both */}
-      <Planets darkMode={darkMode} />
+      <Stars darkMode={darkMode} mousePos={mousePos} isMobile={isMobile} blackHole={blackHole} />
+      {/* Focal stars - mobile-optimized positions */}
+      <FocalStars darkMode={darkMode} isMobile={isMobile} />
+      {/* Celestial body - repositioned for mobile */}
+      <CelestialBody darkMode={darkMode} isMobile={isMobile} />
+      {/* Planets - mobile-specific configuration */}
+      <Planets darkMode={darkMode} isMobile={isMobile} />
+      {/* Black hole - touch interaction */}
+      <BlackHole blackHole={blackHole} mousePos={mousePos} />
       {/* Shooting stars - one on mobile, two on desktop */}
       <ShootingStar darkMode={darkMode} delay={isMobile ? 5 : 3} />
       {!isMobile && <ShootingStar darkMode={darkMode} delay={10} />}
@@ -1286,6 +1619,23 @@ const SpaceBackground = ({ darkMode }: SpaceBackgroundProps) => {
   const isMobile = useIsMobile();
   const [gyroEnabled, setGyroEnabled] = useState(false);
   const [showGyroPrompt, setShowGyroPrompt] = useState(false);
+  const [blackHole, setBlackHole] = useState<BlackHoleState>({
+    active: false,
+    position: new THREE.Vector3(0, 0, -5),
+    startTime: 0,
+    strength: 1,
+  });
+  const clockRef = useRef(0);
+
+  // Update clock reference
+  useEffect(() => {
+    const interval = setInterval(() => {
+      clockRef.current += 0.016; // ~60fps
+    }, 16);
+    return () => clearInterval(interval);
+  }, []);
+
+  // No auto-deactivate - black hole stays while pressing
 
   // Check if gyroscope permission is needed (iOS)
   useEffect(() => {
@@ -1312,6 +1662,80 @@ const SpaceBackground = ({ darkMode }: SpaceBackgroundProps) => {
     }
     setShowGyroPrompt(false);
   };
+
+  // Convert screen coordinates to 3D world position
+  const screenToWorld = useCallback((clientX: number, clientY: number) => {
+    const fov = isMobile ? 65 : 60;
+    const aspect = window.innerWidth / window.innerHeight;
+    const distance = 10;
+    
+    const vFov = (fov * Math.PI) / 180;
+    const height = 2 * Math.tan(vFov / 2) * distance;
+    const width = height * aspect;
+    
+    const normalizedX = (clientX / window.innerWidth) - 0.5;
+    const normalizedY = -((clientY / window.innerHeight) - 0.5);
+    
+    return new THREE.Vector3(normalizedX * width, normalizedY * height, -5);
+  }, [isMobile]);
+
+  // Handle press start - create black hole
+  const handlePressStart = useCallback((clientX: number, clientY: number) => {
+    if (showGyroPrompt) {
+      requestGyroPermission();
+      return;
+    }
+    
+    setBlackHole({
+      active: true,
+      position: screenToWorld(clientX, clientY),
+      startTime: clockRef.current,
+      strength: 1,
+    });
+  }, [showGyroPrompt, screenToWorld]);
+
+  // Handle press end - deactivate black hole
+  const handlePressEnd = useCallback(() => {
+    setBlackHole(prev => ({ ...prev, active: false }));
+  }, []);
+
+  // Handle press move - update black hole position
+  const handlePressMove = useCallback((clientX: number, clientY: number) => {
+    if (blackHole.active) {
+      setBlackHole(prev => ({
+        ...prev,
+        position: screenToWorld(clientX, clientY),
+      }));
+    }
+  }, [blackHole.active, screenToWorld]);
+
+  // Touch handlers
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    handlePressStart(touch.clientX, touch.clientY);
+  }, [handlePressStart]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    handlePressMove(touch.clientX, touch.clientY);
+  }, [handlePressMove]);
+
+  const handleTouchEnd = useCallback(() => {
+    handlePressEnd();
+  }, [handlePressEnd]);
+
+  // Mouse handlers
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    handlePressStart(e.clientX, e.clientY);
+  }, [handlePressStart]);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    handlePressMove(e.clientX, e.clientY);
+  }, [handlePressMove]);
+
+  const handleMouseUp = useCallback(() => {
+    handlePressEnd();
+  }, [handlePressEnd]);
   
   return (
     <div 
@@ -1324,7 +1748,13 @@ const SpaceBackground = ({ darkMode }: SpaceBackgroundProps) => {
         overflow: 'hidden',
         background: darkMode ? '#020015' : '#0a1a30',
       }}
-      onClick={showGyroPrompt ? requestGyroPermission : undefined}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
       {/* Gyro permission prompt for iOS */}
       {showGyroPrompt && (
@@ -1365,7 +1795,7 @@ const SpaceBackground = ({ darkMode }: SpaceBackgroundProps) => {
         frameloop="always"
         flat
       >
-        <SpaceScene darkMode={darkMode} isMobile={isMobile} gyroEnabled={gyroEnabled} />
+        <SpaceScene darkMode={darkMode} isMobile={isMobile} gyroEnabled={gyroEnabled} blackHole={blackHole} />
       </Canvas>
     </div>
   );
