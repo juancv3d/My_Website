@@ -262,7 +262,7 @@ const starFragmentShader = `
 
 const Stars = ({ darkMode, mousePos, isMobile }: { darkMode: boolean; mousePos: React.MutableRefObject<{ x: number; y: number }>; isMobile: boolean }) => {
   const pointsRef = useRef<THREE.Points>(null);
-  const count = isMobile ? 200 : 500;
+  const count = isMobile ? 350 : 500;
   
   const { positions, sizes, brightnesses, twinklePhases } = useMemo(() => {
     const positions = new Float32Array(count * 3);
@@ -1191,17 +1191,31 @@ const Constellations = ({ darkMode }: { darkMode: boolean }) => {
 // ============================================
 // CAMERA with improved depth parallax
 // ============================================
-const Camera = ({ mousePos }: { mousePos: React.MutableRefObject<{ x: number; y: number }> }) => {
+const Camera = ({ mousePos, gyroPos, isMobile }: { 
+  mousePos: React.MutableRefObject<{ x: number; y: number }>; 
+  gyroPos: React.MutableRefObject<{ x: number; y: number }>;
+  isMobile: boolean;
+}) => {
   const { camera } = useThree();
 
   useFrame(() => {
-    // Enhanced parallax for depth effect
-    camera.position.x += (mousePos.current.x * 0.6 - camera.position.x) * 0.025;
-    camera.position.y += (mousePos.current.y * 0.4 - camera.position.y) * 0.025;
-    
-    // Subtle rotation for more depth
-    camera.rotation.y = mousePos.current.x * 0.02;
-    camera.rotation.x = -mousePos.current.y * 0.015;
+    if (isMobile) {
+      // Gyroscope-based parallax for mobile
+      camera.position.x += (gyroPos.current.x * 0.8 - camera.position.x) * 0.05;
+      camera.position.y += (gyroPos.current.y * 0.6 - camera.position.y) * 0.05;
+      
+      // Subtle rotation based on gyro
+      camera.rotation.y = gyroPos.current.x * 0.03;
+      camera.rotation.x = -gyroPos.current.y * 0.02;
+    } else {
+      // Enhanced parallax for depth effect (desktop)
+      camera.position.x += (mousePos.current.x * 0.6 - camera.position.x) * 0.025;
+      camera.position.y += (mousePos.current.y * 0.4 - camera.position.y) * 0.025;
+      
+      // Subtle rotation for more depth
+      camera.rotation.y = mousePos.current.x * 0.02;
+      camera.rotation.x = -mousePos.current.y * 0.015;
+    }
   });
 
   return null;
@@ -1210,31 +1224,56 @@ const Camera = ({ mousePos }: { mousePos: React.MutableRefObject<{ x: number; y:
 // ============================================
 // SCENE
 // ============================================
-const SpaceScene = ({ darkMode, isMobile }: SpaceBackgroundProps & { isMobile: boolean }) => {
+const SpaceScene = ({ darkMode, isMobile, gyroEnabled }: SpaceBackgroundProps & { isMobile: boolean; gyroEnabled: boolean }) => {
   const mousePos = useRef({ x: 0, y: 0 });
+  const gyroPos = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
-    if (isMobile) return; // Disable mouse tracking on mobile
-    
-    const handleMouseMove = (event: MouseEvent) => {
-      mousePos.current.x = (event.clientX / window.innerWidth - 0.5) * 2;
-      mousePos.current.y = -(event.clientY / window.innerHeight - 0.5) * 2;
-    };
+    if (isMobile && gyroEnabled) {
+      // Gyroscope handling for mobile
+      const handleOrientation = (event: DeviceOrientationEvent) => {
+        // gamma: left-right tilt (-90 to 90)
+        // beta: front-back tilt (-180 to 180)
+        const gamma = event.gamma || 0;
+        const beta = event.beta || 0;
+        
+        // Normalize to -1 to 1 range with sensitivity adjustment
+        gyroPos.current.x = Math.max(-1, Math.min(1, gamma / 30));
+        gyroPos.current.y = Math.max(-1, Math.min(1, (beta - 45) / 30)); // 45 is neutral holding angle
+      };
 
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [isMobile]);
+      window.addEventListener('deviceorientation', handleOrientation, { passive: true });
+      
+      return () => {
+        window.removeEventListener('deviceorientation', handleOrientation);
+      };
+    } else if (!isMobile) {
+      // Mouse tracking for desktop
+      const handleMouseMove = (event: MouseEvent) => {
+        mousePos.current.x = (event.clientX / window.innerWidth - 0.5) * 2;
+        mousePos.current.y = -(event.clientY / window.innerHeight - 0.5) * 2;
+      };
+
+      window.addEventListener('mousemove', handleMouseMove, { passive: true });
+      return () => window.removeEventListener('mousemove', handleMouseMove);
+    }
+  }, [isMobile, gyroEnabled]);
 
   return (
     <>
-      {!isMobile && <Camera mousePos={mousePos} />}
+      {/* Camera always enabled - gyro on mobile, mouse parallax on desktop */}
+      <Camera mousePos={mousePos} gyroPos={gyroPos} isMobile={isMobile} />
       <FullscreenNebula darkMode={darkMode} />
+      {/* Constellations only on desktop (too many elements) */}
       {!isMobile && <Constellations darkMode={darkMode} />}
       <Stars darkMode={darkMode} mousePos={mousePos} isMobile={isMobile} />
-      {!isMobile && <FocalStars darkMode={darkMode} />}
+      {/* Focal stars enabled on both - simpler geometry */}
+      <FocalStars darkMode={darkMode} />
       <CelestialBody darkMode={darkMode} />
-      {!isMobile && <Planets darkMode={darkMode} />}
-      {!isMobile && <ShootingStar darkMode={darkMode} delay={3} />}
+      {/* Planets enabled on both */}
+      <Planets darkMode={darkMode} />
+      {/* Shooting stars - one on mobile, two on desktop */}
+      <ShootingStar darkMode={darkMode} delay={isMobile ? 5 : 3} />
       {!isMobile && <ShootingStar darkMode={darkMode} delay={10} />}
     </>
   );
@@ -1245,6 +1284,34 @@ const SpaceScene = ({ darkMode, isMobile }: SpaceBackgroundProps & { isMobile: b
 // ============================================
 const SpaceBackground = ({ darkMode }: SpaceBackgroundProps) => {
   const isMobile = useIsMobile();
+  const [gyroEnabled, setGyroEnabled] = useState(false);
+  const [showGyroPrompt, setShowGyroPrompt] = useState(false);
+
+  // Check if gyroscope permission is needed (iOS)
+  useEffect(() => {
+    if (isMobile) {
+      const needsPermission = typeof (DeviceOrientationEvent as any).requestPermission === 'function';
+      if (needsPermission) {
+        setShowGyroPrompt(true);
+      } else {
+        setGyroEnabled(true);
+      }
+    }
+  }, [isMobile]);
+
+  const requestGyroPermission = async () => {
+    if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
+      try {
+        const permission = await (DeviceOrientationEvent as any).requestPermission();
+        if (permission === 'granted') {
+          setGyroEnabled(true);
+        }
+      } catch (e) {
+        console.log('Gyroscope permission denied');
+      }
+    }
+    setShowGyroPrompt(false);
+  };
   
   return (
     <div 
@@ -1257,27 +1324,48 @@ const SpaceBackground = ({ darkMode }: SpaceBackgroundProps) => {
         overflow: 'hidden',
         background: darkMode ? '#020015' : '#0a1a30',
       }}
+      onClick={showGyroPrompt ? requestGyroPermission : undefined}
     >
+      {/* Gyro permission prompt for iOS */}
+      {showGyroPrompt && (
+        <div style={{
+          position: 'absolute',
+          bottom: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: 'rgba(255,255,255,0.15)',
+          backdropFilter: 'blur(10px)',
+          padding: '12px 20px',
+          borderRadius: '12px',
+          color: 'white',
+          fontSize: '14px',
+          zIndex: 100,
+          textAlign: 'center',
+          cursor: 'pointer',
+        }}>
+          Tap to enable motion effects
+        </div>
+      )}
       <Canvas
         key={`${darkMode ? 'dark' : 'light'}-${isMobile ? 'mobile' : 'desktop'}`}
-        camera={{ position: [0, 0, 5], fov: isMobile ? 70 : 60 }}
+        camera={{ position: [0, 0, 5], fov: isMobile ? 65 : 60 }}
         style={{ 
           display: 'block',
           width: '100%', 
           height: '100%',
         }}
         gl={{ 
-          antialias: !isMobile,
+          antialias: true,
           alpha: false,
           powerPreference: 'high-performance',
           stencil: false,
           depth: true,
         }}
-        dpr={isMobile ? 1 : [1, 1.5]}
+        dpr={isMobile ? Math.min(window.devicePixelRatio, 2) : [1, 2]}
         frameloop="always"
         flat
       >
-        <SpaceScene darkMode={darkMode} isMobile={isMobile} />
+        <SpaceScene darkMode={darkMode} isMobile={isMobile} gyroEnabled={gyroEnabled} />
       </Canvas>
     </div>
   );
