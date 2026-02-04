@@ -1626,6 +1626,8 @@ const SpaceBackground = ({ darkMode }: SpaceBackgroundProps) => {
     strength: 1,
   });
   const clockRef = useRef(0);
+  const pressStartTimeRef = useRef(0);
+  const autoDeactivateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Update clock reference
   useEffect(() => {
@@ -1635,7 +1637,14 @@ const SpaceBackground = ({ darkMode }: SpaceBackgroundProps) => {
     return () => clearInterval(interval);
   }, []);
 
-  // No auto-deactivate - black hole stays while pressing
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (autoDeactivateTimeoutRef.current) {
+        clearTimeout(autoDeactivateTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Check if gyroscope permission is needed (iOS)
   useEffect(() => {
@@ -1686,6 +1695,15 @@ const SpaceBackground = ({ darkMode }: SpaceBackgroundProps) => {
       return;
     }
     
+    // Clear any existing auto-deactivate timeout
+    if (autoDeactivateTimeoutRef.current) {
+      clearTimeout(autoDeactivateTimeoutRef.current);
+      autoDeactivateTimeoutRef.current = null;
+    }
+    
+    // Record press start time
+    pressStartTimeRef.current = Date.now();
+    
     setBlackHole({
       active: true,
       position: screenToWorld(clientX, clientY),
@@ -1694,9 +1712,22 @@ const SpaceBackground = ({ darkMode }: SpaceBackgroundProps) => {
     });
   }, [showGyroPrompt, screenToWorld]);
 
-  // Handle press end - deactivate black hole
+  // Handle press end - deactivate black hole (with minimum duration for quick clicks)
   const handlePressEnd = useCallback(() => {
-    setBlackHole(prev => ({ ...prev, active: false }));
+    const pressDuration = Date.now() - pressStartTimeRef.current;
+    const minDuration = 1200; // Minimum time black hole stays visible (1.2 seconds)
+    
+    if (pressDuration < 300) {
+      // Quick click - keep black hole active for minimum duration
+      const remainingTime = minDuration - pressDuration;
+      autoDeactivateTimeoutRef.current = setTimeout(() => {
+        setBlackHole(prev => ({ ...prev, active: false }));
+        autoDeactivateTimeoutRef.current = null;
+      }, remainingTime);
+    } else {
+      // Long press - deactivate immediately
+      setBlackHole(prev => ({ ...prev, active: false }));
+    }
   }, []);
 
   // Handle press move - update black hole position
