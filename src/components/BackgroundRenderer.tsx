@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useBackground } from '../context';
-import ParticlesBackground from './ParticlesBackground';
+import ParticlesBackground from './backgrounds/ParticlesBackground';
 import { SpaceBackground, FluidBackground } from './backgrounds';
 
 const BackgroundRenderer = () => {
