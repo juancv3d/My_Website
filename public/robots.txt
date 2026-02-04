@@ -1,0 +1,10 @@
+# robots.txt for juancamilo.dev
+
+User-agent: *
+Allow: /
+
+# Disallow admin or private paths (if any)
+# Disallow: /admin/
+
+# Sitemap
+Sitemap: https://juancamilo.dev/sitemap.xml
