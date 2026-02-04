@@ -30,8 +30,8 @@ const useItemHeight = () => {
 
 const themeOptions: ThemeOption[] = [
   { id: 'particles', icon: <HiSparkles />, label: 'Particles' },
-  { id: 'space', icon: <IoMdPlanet />, label: 'Space' },
   { id: 'fluid', icon: <RiWaterFlashLine />, label: 'Fluid' },
+  { id: 'space', icon: <IoMdPlanet />, label: 'Space' },
 ];
 
 const BackgroundSelector = () => {

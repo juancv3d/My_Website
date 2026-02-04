@@ -1560,7 +1560,10 @@ const SpaceScene = ({ darkMode, isMobile, gyroEnabled, blackHole }: SpaceBackgro
 
   useEffect(() => {
     if (isMobile && gyroEnabled) {
-      // Gyroscope handling for mobile
+      // Gyroscope handling for mobile with smoothing
+      const targetGyro = { x: 0, y: 0 };
+      const smoothingFactor = 0.08; // Lower = smoother but slower response
+      
       const handleOrientation = (event: DeviceOrientationEvent) => {
         // gamma: left-right tilt (-90 to 90)
         // beta: front-back tilt (-180 to 180)
@@ -1568,8 +1571,12 @@ const SpaceScene = ({ darkMode, isMobile, gyroEnabled, blackHole }: SpaceBackgro
         const beta = event.beta || 0;
         
         // Normalize to -1 to 1 range with sensitivity adjustment
-        gyroPos.current.x = Math.max(-1, Math.min(1, gamma / 30));
-        gyroPos.current.y = Math.max(-1, Math.min(1, (beta - 45) / 30)); // 45 is neutral holding angle
+        targetGyro.x = Math.max(-1, Math.min(1, gamma / 35));
+        targetGyro.y = Math.max(-1, Math.min(1, (beta - 45) / 35));
+        
+        // Apply smoothing (lerp) to avoid jittery movements
+        gyroPos.current.x += (targetGyro.x - gyroPos.current.x) * smoothingFactor;
+        gyroPos.current.y += (targetGyro.y - gyroPos.current.y) * smoothingFactor;
       };
 
       window.addEventListener('deviceorientation', handleOrientation, { passive: true });
