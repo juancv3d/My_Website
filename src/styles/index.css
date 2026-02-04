@@ -235,15 +235,22 @@ body {
 }
 
 .app.light .name {
-  color: #ffffff;
-  background: linear-gradient(135deg, #ffffff 0%, #e0f7ff 50%, #ffffff 100%);
+  color: #0f172a;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
   -webkit-background-clip: text;
   background-clip: text;
-  text-shadow: 
-    0 2px 10px rgba(0, 0, 0, 0.8),
-    0 0 40px rgba(0, 0, 0, 0.5),
-    0 0 80px rgba(0, 0, 0, 0.3);
+  text-shadow: none;
   animation: fadeInUp 0.8s ease-out, gradientShift 5s ease infinite;
+}
+
+/* Space theme light mode - white text */
+.app.light.theme-space .name {
+  color: #ffffff !important;
+  background: none !important;
+  -webkit-background-clip: unset;
+  background-clip: unset;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  animation: fadeInUp 0.8s ease-out;
 }
 
 .title {
@@ -261,10 +268,14 @@ body {
 }
 
 .app.light .title {
-  color: #0891b2;
-  text-shadow: 
-    0 1px 2px rgba(255, 255, 255, 0.8),
-    0 2px 8px rgba(0, 0, 0, 0.3);
+  color: #0f172a;
+  text-shadow: none;
+}
+
+/* Space theme light mode - white text */
+.app.light.theme-space .title {
+  color: #ffffff !important;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 /* Social links */
@@ -291,8 +302,14 @@ body {
 }
 
 .app.light .social-links a {
-  color: rgba(255, 255, 255, 0.9);
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+  color: #0f172a;
+  filter: none;
+}
+
+/* Space theme light mode - white icons */
+.app.light.theme-space .social-links a {
+  color: #ffffff !important;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 /* Hover effect with glow ring */
@@ -397,6 +414,4 @@ body {
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
+    transition-duration: 0.01ms !impor            

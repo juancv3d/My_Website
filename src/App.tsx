@@ -2,10 +2,10 @@ import { BackgroundProvider, useBackground } from './context';
 import { ThemeToggle, SocialLinks, BackgroundSelector, BackgroundRenderer } from './components';
 
 function AppContent() {
-  const { darkMode } = useBackground();
+  const { darkMode, backgroundTheme } = useBackground();
 
   return (
-    <div className={`app ${darkMode ? 'dark' : 'light'}`}>
+    <div className={`app ${darkMode ? 'dark' : 'light'} theme-${backgroundTheme}`}>
       <BackgroundRenderer />
       
       <div className="controls">

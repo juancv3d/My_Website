@@ -107,7 +107,7 @@ const nebulaFragmentShader = `
   float fbm(vec3 p) {
     float value = 0.0;
     float amplitude = 0.5;
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 3; i++) {
       value += amplitude * snoise(p);
       p *= 2.0;
       amplitude *= 0.5;
@@ -155,12 +155,12 @@ const FullscreenNebula = ({ darkMode }: { darkMode: boolean }) => {
         color3: new THREE.Color('#3a2070'),
       };
     } else {
-      // Day mode - warm solar nebula
+      // Day mode - soft blue sky nebula
       return {
-        background: new THREE.Color('#0a1a30'),
-        color1: new THREE.Color('#dd4422'),
-        color2: new THREE.Color('#ff7744'),
-        color3: new THREE.Color('#cc3344'),
+        background: new THREE.Color('#1a3a5c'),
+        color1: new THREE.Color('#4a90c2'),
+        color2: new THREE.Color('#6bb5e0'),
+        color3: new THREE.Color('#3a7ab8'),
       };
     }
   }, [darkMode]);
@@ -192,7 +192,7 @@ const FullscreenNebula = ({ darkMode }: { darkMode: boolean }) => {
 
   return (
     <mesh ref={meshRef} position={[0, 0, -50]} frustumCulled={false}>
-      <planeGeometry args={[200, 200]} />
+      <planeGeometry args={[200, 200, 1, 1]} />
       <shaderMaterial
         vertexShader={nebulaVertexShader}
         fragmentShader={nebulaFragmentShader}
@@ -472,7 +472,7 @@ const moonFragmentShader = `
   float fbm(vec2 p) {
     float value = 0.0;
     float amplitude = 0.5;
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 3; i++) {
       value += amplitude * noise(p);
       p *= 2.0;
       amplitude *= 0.5;
@@ -638,7 +638,7 @@ const sunFragmentShader = `
   float fbm(vec2 p) {
     float value = 0.0;
     float amplitude = 0.5;
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 4; i++) {
       value += amplitude * noise(p);
       p *= 2.0;
       amplitude *= 0.5;
@@ -649,7 +649,7 @@ const sunFragmentShader = `
   float fbm3(vec3 p) {
     float value = 0.0;
     float amplitude = 0.5;
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 3; i++) {
       value += amplitude * noise3(p);
       p *= 2.0;
       amplitude *= 0.5;
@@ -745,7 +745,7 @@ const Moon = () => {
 
   return (
     <mesh ref={meshRef}>
-      <sphereGeometry args={[0.9, 48, 48]} />
+      <sphereGeometry args={[0.9, 32, 32]} />
       <shaderMaterial
         vertexShader={moonVertexShader}
         fragmentShader={moonFragmentShader}
@@ -769,7 +769,7 @@ const Sun = () => {
 
   return (
     <mesh ref={meshRef}>
-      <sphereGeometry args={[1.3, 48, 48]} />
+      <sphereGeometry args={[1.3, 32, 32]} />
       <shaderMaterial
         vertexShader={sunVertexShader}
         fragmentShader={sunFragmentShader}
@@ -814,7 +814,7 @@ const CelestialBody = ({ darkMode, isMobile }: { darkMode: boolean; isMobile: bo
     <group ref={groupRef} position={position} key={darkMode ? 'moon' : 'sun'}>
       {/* Outer glow */}
       <mesh>
-        <sphereGeometry args={[2.5, 16, 16]} />
+        <sphereGeometry args={[2.5, 12, 12]} />
         <meshBasicMaterial 
           color={glowConfig.outerGlow} 
           transparent 
@@ -824,7 +824,7 @@ const CelestialBody = ({ darkMode, isMobile }: { darkMode: boolean; isMobile: bo
       </mesh>
       {/* Middle glow */}
       <mesh>
-        <sphereGeometry args={[1.8, 16, 16]} />
+        <sphereGeometry args={[1.8, 12, 12]} />
         <meshBasicMaterial 
           color={glowConfig.outerGlow} 
           transparent 
@@ -834,7 +834,7 @@ const CelestialBody = ({ darkMode, isMobile }: { darkMode: boolean; isMobile: bo
       </mesh>
       {/* Inner glow */}
       <mesh>
-        <sphereGeometry args={[1.3, 16, 16]} />
+        <sphereGeometry args={[1.3, 12, 12]} />
         <meshBasicMaterial 
           color={glowConfig.innerGlow} 
           transparent 
@@ -1442,30 +1442,6 @@ const Constellation = ({ data, darkMode }: { data: ConstellationData; darkMode: 
 
 const Constellations = ({ darkMode }: { darkMode: boolean }) => {
   const constellations = useMemo<ConstellationData[]>(() => [
-    // ORION - Simple hourglass: 4 corners + 3 belt stars
-    {
-      stars: [
-        // Four corners (rectangle)
-        { pos: [0.7, 1.0, 0], size: 0.05, brightness: 1.0 },    // 0: Betelgeuse - top left
-        { pos: [-0.7, 1.0, 0], size: 0.035, brightness: 0.85 }, // 1: Bellatrix - top right
-        { pos: [0.5, -1.0, 0], size: 0.03, brightness: 0.75 },  // 2: Saiph - bottom left
-        { pos: [-0.6, -1.0, 0], size: 0.045, brightness: 0.95 },// 3: Rigel - bottom right
-        // Belt (3 stars in a row)
-        { pos: [0.2, 0, 0], size: 0.028, brightness: 0.85 },    // 4: Alnitak
-        { pos: [0, 0, 0], size: 0.03, brightness: 0.9 },        // 5: Alnilam
-        { pos: [-0.2, 0, 0], size: 0.026, brightness: 0.8 },    // 6: Mintaka
-      ],
-      lines: [
-        // Shoulders to belt
-        [0, 4], [1, 6],
-        // Belt
-        [4, 5], [5, 6],
-        // Belt to feet
-        [4, 2], [6, 3],
-      ],
-      offset: [-9, -2.5, -11],
-      scale: 1.5,
-    },
     // BIG DIPPER - Simple: bowl + handle
     {
       stars: [
@@ -1487,21 +1463,6 @@ const Constellations = ({ darkMode }: { darkMode: boolean }) => {
       ],
       offset: [8, 4, -12],
       scale: 1.1,
-    },
-    // CASSIOPEIA - Clear W shape
-    {
-      stars: [
-        { pos: [0.8, -0.2, 0], size: 0.028, brightness: 0.8 },  // 0: Caph
-        { pos: [0.4, 0.3, 0], size: 0.032, brightness: 0.9 },   // 1: Schedar
-        { pos: [0, -0.15, 0], size: 0.03, brightness: 0.85 },   // 2: Navi
-        { pos: [-0.4, 0.25, 0], size: 0.026, brightness: 0.75 },// 3: Ruchbah
-        { pos: [-0.8, -0.1, 0], size: 0.024, brightness: 0.7 }, // 4: Segin
-      ],
-      lines: [
-        [0, 1], [1, 2], [2, 3], [3, 4], // W shape
-      ],
-      offset: [-6, 4.5, -13],
-      scale: 1.4,
     },
   ], []);
 
@@ -1601,8 +1562,8 @@ const SpaceScene = ({ darkMode, isMobile, gyroEnabled, blackHole }: SpaceBackgro
       {/* Camera always enabled - gyro on mobile, mouse parallax on desktop */}
       <Camera mousePos={mousePos} gyroPos={gyroPos} isMobile={isMobile} />
       <FullscreenNebula darkMode={darkMode} />
-      {/* Constellations only on desktop (too many elements) */}
-      {!isMobile && <Constellations darkMode={darkMode} />}
+      {/* Constellations only on desktop in dark mode */}
+      {!isMobile && darkMode && <Constellations darkMode={darkMode} />}
       <Stars darkMode={darkMode} mousePos={mousePos} isMobile={isMobile} blackHole={blackHole} />
       {/* Focal stars - mobile-optimized positions */}
       <FocalStars darkMode={darkMode} isMobile={isMobile} />
@@ -1636,11 +1597,11 @@ const SpaceBackground = ({ darkMode }: SpaceBackgroundProps) => {
   const pressStartTimeRef = useRef(0);
   const autoDeactivateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Update clock reference
+  // Update clock reference (reduced frequency)
   useEffect(() => {
     const interval = setInterval(() => {
-      clockRef.current += 0.016; // ~60fps
-    }, 16);
+      clockRef.current += 0.033; // ~30fps for clock reference
+    }, 33);
     return () => clearInterval(interval);
   }, []);
 
