@@ -1017,6 +1017,14 @@
     z-index: 1;
   }
 
+  .map-legend-overlay {
+    bottom: auto;
+    top: 140px;
+    left: 10px;
+    font-size: 11px;
+    padding: 8px 10px;
+  }
+
   .itinerario-sidebar {
     position: absolute;
     bottom: 0;
@@ -1131,6 +1139,7 @@
     flex-direction: row;
     padding-left: 0;
     gap: 12px;
+    align-items: stretch;
   }
 
   .timeline::before {
@@ -1143,6 +1152,7 @@
     max-width: 170px;
     margin-bottom: 0;
     scroll-snap-align: start;
+    display: flex;
   }
 
   .timeline-marker {
@@ -1155,6 +1165,7 @@
 
   .timeline-card {
     height: 100%;
+    width: 100%;
     display: flex;
     flex-direction: column;
     padding: 12px;
