@@ -48,6 +48,26 @@ Personal website built with React 18 + TypeScript + Vite. Includes interactive b
 
 ## Recent Sessions
 
+### Session: 2026-03-16 (Evening)
+
+**Summary:** Improved mobile responsive design for the itinerary page
+
+**Changes:**
+- Reordered timeline cards to show destination names first (using CSS `order` property)
+- Made timeline cards more compact (150-170px width) to show more destinations
+- Country headers are now sticky and compact during horizontal scroll
+- Hidden legend completely on mobile to prevent blocking itinerary scroll
+
+**Decisions:**
+- Used CSS `order` property instead of restructuring JSX to reorder card elements visually
+- Legend hidden with `!important` on mobile since it blocks the itinerary scroll area
+
+**Issues & Fixes:**
+- Timeline cards showing dates first instead of destination names → Added `order` property to prioritize `.timeline-name`
+- Legend blocking itinerary scroll on mobile → Removed the `.itinerario-sidebar:not(.collapsed) .legend` rule
+
+---
+
 ### Session: 2026-03-16
 
 **Summary:** Built complete interactive travel itinerary for Europe trip (Apr 23 - May 7, 2026) with Apple glassmorphism design, and added in-app editing capabilities.

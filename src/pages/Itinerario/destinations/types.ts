@@ -87,3 +87,11 @@ export interface Flight {
   duration: string;
   isReturn: boolean;
 }
+
+export interface FlightGroup {
+  id: string;
+  name: string;
+  airline: string;
+  confirmationCode: string;
+  flights: Flight[];
+}

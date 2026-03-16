@@ -1,12 +1,16 @@
-import { useState, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Polyline, Popup, useMap } from 'react-leaflet';
+import { useState, useMemo, useCallback, useRef } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import ArrowPolyline from './ArrowPolyline';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { routes, flights } from './destinations';
-import { Destination, Route } from './destinations/types';
+import { routes } from './destinations';
+import { Destination, Route, FlightGroup } from './destinations/types';
 import DestinationModal from './DestinationModal';
 import EditDestinationModal from './EditDestinationModal';
+import AddFlightModal from './AddFlightModal';
+import QuickActions from './QuickActions';
 import { useEditableItinerary } from './useEditableItinerary';
+import { useDragGesture, SnapPoint } from './hooks/useDragGesture';
 import './styles.css';
 
 const TRIP_START = new Date('2026-04-23');
@@ -67,6 +71,12 @@ function FlyToDestination({ destination }: { destination: Destination | null }) 
   return null;
 }
 
+function MapRefSetter({ mapRef }: { mapRef: React.MutableRefObject<L.Map | null> }) {
+  const map = useMap();
+  mapRef.current = map;
+  return null;
+}
+
 function getCountdownInfo() {
   const now = new Date();
   const startDiff = Math.ceil((TRIP_START.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
@@ -96,23 +106,56 @@ function Itinerario() {
   const [selectedDestination, setSelectedDestination] = useState<Destination | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [addFlightModalOpen, setAddFlightModalOpen] = useState(false);
   const [flyTo, setFlyTo] = useState<Destination | null>(null);
   const [showFlights, setShowFlights] = useState(false);
   const [showReservas, setShowReservas] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [snapPoint, setSnapPoint] = useState<SnapPoint>('half');
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const mapRef = useRef<L.Map | null>(null);
+
+  const snapPointHeights = useMemo(() => ({
+    collapsed: 140,
+    half: window.innerHeight * 0.5,
+    expanded: window.innerHeight * 0.9,
+  }), []);
+
+  const { isDragging, dragOffset, handlers: dragHandlers } = useDragGesture({
+    snapPoints: snapPointHeights,
+    currentSnap: snapPoint,
+    onSnapChange: setSnapPoint,
+  });
 
   const {
     destinations,
     reservations,
+    flightGroups,
     isEdited,
     updateDestination,
     toggleReservationStatus,
     updateReservationCode,
+    addFlightGroup,
+    deleteFlightGroup,
+    addFlight,
+    deleteFlight,
     resetAll,
   } = useEditableItinerary();
 
   const countdown = getCountdownInfo();
   const pendingCount = reservations.filter(r => r.status === 'pending').length;
+  const totalFlights = flightGroups.reduce((acc, g) => acc + g.flights.length, 0);
+
+  const toggleGroupExpanded = (groupId: string) => {
+    setExpandedGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(groupId)) {
+        next.delete(groupId);
+      } else {
+        next.add(groupId);
+      }
+      return next;
+    });
+  };
 
   const groupedDestinations = useMemo(() => {
     const groups: { country: string; destinations: Destination[] }[] = [];
@@ -141,6 +184,20 @@ function Itinerario() {
     setTimeout(() => setFlyTo(null), 100);
   };
 
+  const handleDeleteFlightGroup = (groupId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (confirm('¿Eliminar esta reserva de vuelos?')) {
+      deleteFlightGroup(groupId);
+    }
+  };
+
+  const handleDeleteFlight = (groupId: string, flightId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (confirm('¿Eliminar este vuelo?')) {
+      deleteFlight(groupId, flightId);
+    }
+  };
+
   const renderPopupContent = (dest: Destination) => (
     <div className="popup-content">
       <div className="popup-name">{dest.name}</div>
@@ -167,12 +224,106 @@ function Itinerario() {
     </div>
   );
 
+  const renderFlightGroup = (group: FlightGroup) => {
+    const isExpanded = expandedGroups.has(group.id);
+    
+    return (
+      <div key={group.id} className="flight-group-item">
+        <div 
+          className="flight-group-header"
+          onClick={() => toggleGroupExpanded(group.id)}
+        >
+          <span className={`flight-group-toggle ${isExpanded ? 'open' : ''}`}>›</span>
+          <div className="flight-group-info">
+            <span className="flight-group-airline">✈️ {group.name}</span>
+            <span className="flight-group-code">{group.confirmationCode}</span>
+            <span className="flight-group-count">({group.flights.length} vuelos)</span>
+          </div>
+          <div className="flight-group-actions">
+            <button 
+              className="flight-group-btn delete"
+              onClick={(e) => handleDeleteFlightGroup(group.id, e)}
+              title="Eliminar reserva"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+        
+        {isExpanded && group.flights.length > 0 && (
+          <div className="flight-group-flights">
+            {group.flights.map((flight) => (
+              <div key={flight.id} className={`flight-card ${flight.isReturn ? 'return' : 'outbound'}`}>
+                <div className="flight-header">
+                  <span className="flight-number">{flight.flightNumber}</span>
+                  <span className="flight-duration">{flight.duration}</span>
+                  <button
+                    className="flight-delete-btn"
+                    onClick={(e) => handleDeleteFlight(group.id, flight.id, e)}
+                    title="Eliminar vuelo"
+                  >
+                    ×
+                  </button>
+                </div>
+                <div className="flight-route">
+                  <div className="flight-endpoint">
+                    <span className="airport-code">{flight.from.code}</span>
+                    <span className="flight-time">{flight.departure.time}</span>
+                    <span className="flight-date">{flight.departure.date}</span>
+                  </div>
+                  <div className="flight-arrow">→</div>
+                  <div className="flight-endpoint">
+                    <span className="airport-code">{flight.to.code}</span>
+                    <span className="flight-time">{flight.arrival.time}</span>
+                    <span className="flight-date">{flight.arrival.date}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const sidebarClassName = useMemo(() => {
+    const classes = ['itinerario-sidebar'];
+    if (snapPoint === 'collapsed') classes.push('collapsed');
+    if (snapPoint === 'expanded') classes.push('expanded');
+    if (isDragging) classes.push('dragging');
+    return classes.join(' ');
+  }, [snapPoint, isDragging]);
+
+  const sidebarStyle = useMemo(() => {
+    if (!isDragging) return {};
+    const currentHeight = snapPointHeights[snapPoint];
+    const newHeight = Math.max(140, Math.min(window.innerHeight * 0.9, currentHeight + dragOffset));
+    return { maxHeight: `${newHeight}px` };
+  }, [isDragging, dragOffset, snapPoint, snapPointHeights]);
+
+  const handleCenterMap = useCallback(() => {
+    if (mapRef.current) {
+      mapRef.current.flyTo([43.3, 7.5], 5, { duration: 1.5 });
+    }
+  }, []);
+
+  const handleNextDestination = useCallback(() => {
+    const currentIndex = selectedDestination 
+      ? destinations.findIndex(d => d.id === selectedDestination.id)
+      : -1;
+    const nextIndex = (currentIndex + 1) % destinations.length;
+    const nextDest = destinations[nextIndex];
+    setSelectedDestination(nextDest);
+    setFlyTo(nextDest);
+    setTimeout(() => setFlyTo(null), 100);
+  }, [selectedDestination, destinations]);
+
   return (
     <div className="itinerario-container">
-      <div className={`itinerario-sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
+      <div className={sidebarClassName} style={sidebarStyle}>
         <div 
           className="sidebar-drag-handle"
-          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          {...dragHandlers}
         >
           <div className="drag-indicator"></div>
         </div>
@@ -189,39 +340,30 @@ function Itinerario() {
         </div>
 
         <div className="flights-section">
+          <div className="flights-section-header">
+            <div className="flights-section-title">
+              <span>✈️ Vuelos</span>
+              <span className="flights-count-badge">{flightGroups.length} reservas · {totalFlights} vuelos</span>
+            </div>
+            <button 
+              className="add-flight-btn"
+              onClick={() => setAddFlightModalOpen(true)}
+            >
+              + Agregar
+            </button>
+          </div>
+          
           <button 
             className="flights-toggle"
             onClick={() => setShowFlights(!showFlights)}
           >
-            <span className="flights-icon">✈️</span>
-            <span>Vuelos KLM</span>
-            <span className="flights-code">ZIFHKS</span>
+            <span>Ver todas las reservas</span>
             <span className={`toggle-arrow ${showFlights ? 'open' : ''}`}>›</span>
           </button>
           
           {showFlights && (
-            <div className="flights-list">
-              {flights.map((flight) => (
-                <div key={flight.id} className={`flight-card ${flight.isReturn ? 'return' : 'outbound'}`}>
-                  <div className="flight-header">
-                    <span className="flight-number">{flight.flightNumber}</span>
-                    <span className="flight-duration">{flight.duration}</span>
-                  </div>
-                  <div className="flight-route">
-                    <div className="flight-endpoint">
-                      <span className="airport-code">{flight.from.code}</span>
-                      <span className="flight-time">{flight.departure.time}</span>
-                      <span className="flight-date">{flight.departure.date}</span>
-                    </div>
-                    <div className="flight-arrow">→</div>
-                    <div className="flight-endpoint">
-                      <span className="airport-code">{flight.to.code}</span>
-                      <span className="flight-time">{flight.arrival.time}</span>
-                      <span className="flight-date">{flight.arrival.date}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <div className="flight-groups-container">
+              {flightGroups.map(renderFlightGroup)}
             </div>
           )}
         </div>
@@ -353,23 +495,19 @@ function Itinerario() {
           />
 
           <FlyToDestination destination={flyTo} />
+          <MapRefSetter mapRef={mapRef} />
 
-          <div className="routes-container">
-            {routes.map((route: Route) => (
-              <Polyline
-                key={route.id}
-                positions={route.coordinates}
-                pathOptions={{
-                  color: routeColors[route.type].color,
-                  dashArray: routeColors[route.type].dashArray,
-                  weight: 4,
-                  opacity: 0.9,
-                }}
-              >
-                <Popup>{route.label}</Popup>
-              </Polyline>
-            ))}
-          </div>
+          {routes.map((route: Route) => (
+            <ArrowPolyline
+              key={route.id}
+              positions={route.coordinates}
+              color={routeColors[route.type].color}
+              dashArray={routeColors[route.type].dashArray}
+              weight={4}
+              opacity={0.9}
+              label={route.label}
+            />
+          ))}
 
           {destinations.map((dest, idx) => (
             <Marker
@@ -387,6 +525,11 @@ function Itinerario() {
           ))}
         </MapContainer>
       </div>
+
+      <QuickActions 
+        onCenterMap={handleCenterMap}
+        onNextDestination={handleNextDestination}
+      />
 
       {modalOpen && selectedDestination && (
         <DestinationModal
@@ -407,6 +550,15 @@ function Itinerario() {
             setSelectedDestination(updated);
           }}
           onClose={() => setEditModalOpen(false)}
+        />
+      )}
+
+      {addFlightModalOpen && (
+        <AddFlightModal
+          existingGroups={flightGroups}
+          onAddGroup={addFlightGroup}
+          onAddFlight={addFlight}
+          onClose={() => setAddFlightModalOpen(false)}
         />
       )}
     </div>

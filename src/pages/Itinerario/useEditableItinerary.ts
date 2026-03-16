@@ -1,9 +1,10 @@
 import { useState, useCallback } from 'react';
-import { Destination, Reservation } from './destinations/types';
-import { destinations as defaultDestinations } from './destinations';
+import { Destination, Reservation, FlightGroup, Flight } from './destinations/types';
+import { destinations as defaultDestinations, flights as defaultFlightsArray } from './destinations';
 
 const STORAGE_KEY_DESTINATIONS = 'itinerario-destinations';
 const STORAGE_KEY_RESERVATIONS = 'itinerario-reservations';
+const STORAGE_KEY_FLIGHT_GROUPS = 'itinerario-flight-groups';
 
 const defaultReservations: Reservation[] = [
   { id: 'vuelos', name: 'Vuelos KLM', status: 'confirmed', code: 'ZIFHKS' },
@@ -21,6 +22,16 @@ const defaultReservations: Reservation[] = [
   { id: 'aloj-madrid', name: 'Alojamiento Madrid', status: 'pending' },
 ];
 
+const defaultFlightGroups: FlightGroup[] = [
+  {
+    id: 'klm-main',
+    name: 'Vuelos KLM',
+    airline: 'KLM',
+    confirmationCode: 'ZIFHKS',
+    flights: defaultFlightsArray,
+  },
+];
+
 function loadFromStorage<T>(key: string, fallback: T): T {
   try {
     const stored = localStorage.getItem(key);
@@ -36,6 +47,10 @@ function saveToStorage<T>(key: string, data: T) {
   } catch {}
 }
 
+function generateId(): string {
+  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
+
 export function useEditableItinerary() {
   const [destinations, setDestinations] = useState<Destination[]>(() =>
     loadFromStorage(STORAGE_KEY_DESTINATIONS, defaultDestinations)
@@ -43,10 +58,14 @@ export function useEditableItinerary() {
   const [reservations, setReservations] = useState<Reservation[]>(() =>
     loadFromStorage(STORAGE_KEY_RESERVATIONS, defaultReservations)
   );
+  const [flightGroups, setFlightGroups] = useState<FlightGroup[]>(() =>
+    loadFromStorage(STORAGE_KEY_FLIGHT_GROUPS, defaultFlightGroups)
+  );
 
   const isEdited =
     localStorage.getItem(STORAGE_KEY_DESTINATIONS) !== null ||
-    localStorage.getItem(STORAGE_KEY_RESERVATIONS) !== null;
+    localStorage.getItem(STORAGE_KEY_RESERVATIONS) !== null ||
+    localStorage.getItem(STORAGE_KEY_FLIGHT_GROUPS) !== null;
 
   const updateDestination = useCallback((updated: Destination) => {
     setDestinations(prev => {
@@ -76,20 +95,95 @@ export function useEditableItinerary() {
     });
   }, []);
 
+  const addFlightGroup = useCallback((group: Omit<FlightGroup, 'id'>) => {
+    setFlightGroups(prev => {
+      const next = [...prev, { ...group, id: generateId() }];
+      saveToStorage(STORAGE_KEY_FLIGHT_GROUPS, next);
+      return next;
+    });
+  }, []);
+
+  const updateFlightGroup = useCallback((groupId: string, updates: Partial<Omit<FlightGroup, 'id'>>) => {
+    setFlightGroups(prev => {
+      const next = prev.map(g => (g.id === groupId ? { ...g, ...updates } : g));
+      saveToStorage(STORAGE_KEY_FLIGHT_GROUPS, next);
+      return next;
+    });
+  }, []);
+
+  const deleteFlightGroup = useCallback((groupId: string) => {
+    setFlightGroups(prev => {
+      const next = prev.filter(g => g.id !== groupId);
+      saveToStorage(STORAGE_KEY_FLIGHT_GROUPS, next);
+      return next;
+    });
+  }, []);
+
+  const addFlight = useCallback((groupId: string, flight: Omit<Flight, 'id'>) => {
+    setFlightGroups(prev => {
+      const next = prev.map(g => {
+        if (g.id === groupId) {
+          return { ...g, flights: [...g.flights, { ...flight, id: generateId() }] };
+        }
+        return g;
+      });
+      saveToStorage(STORAGE_KEY_FLIGHT_GROUPS, next);
+      return next;
+    });
+  }, []);
+
+  const updateFlight = useCallback((groupId: string, flightId: string, updates: Partial<Omit<Flight, 'id'>>) => {
+    setFlightGroups(prev => {
+      const next = prev.map(g => {
+        if (g.id === groupId) {
+          return {
+            ...g,
+            flights: g.flights.map(f => (f.id === flightId ? { ...f, ...updates } : f)),
+          };
+        }
+        return g;
+      });
+      saveToStorage(STORAGE_KEY_FLIGHT_GROUPS, next);
+      return next;
+    });
+  }, []);
+
+  const deleteFlight = useCallback((groupId: string, flightId: string) => {
+    setFlightGroups(prev => {
+      const next = prev.map(g => {
+        if (g.id === groupId) {
+          return { ...g, flights: g.flights.filter(f => f.id !== flightId) };
+        }
+        return g;
+      });
+      saveToStorage(STORAGE_KEY_FLIGHT_GROUPS, next);
+      return next;
+    });
+  }, []);
+
   const resetAll = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY_DESTINATIONS);
     localStorage.removeItem(STORAGE_KEY_RESERVATIONS);
+    localStorage.removeItem(STORAGE_KEY_FLIGHT_GROUPS);
     setDestinations(defaultDestinations);
     setReservations(defaultReservations);
+    setFlightGroups(defaultFlightGroups);
   }, []);
 
   return {
     destinations,
     reservations,
+    flightGroups,
     isEdited,
     updateDestination,
     toggleReservationStatus,
     updateReservationCode,
+    addFlightGroup,
+    updateFlightGroup,
+    deleteFlightGroup,
+    addFlight,
+    updateFlight,
+    deleteFlight,
     resetAll,
   };
 }
