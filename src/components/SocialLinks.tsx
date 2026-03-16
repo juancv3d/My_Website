@@ -1,7 +1,8 @@
-import { FaGithub, FaLinkedin, FaEnvelope, FaInstagram } from 'react-icons/fa';
+import { FaGithub, FaLinkedin, FaEnvelope, FaInstagram, FaMapMarkedAlt } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 import { useSound } from '../hooks';
 
-const links = [
+const externalLinks = [
   {
     name: 'GitHub',
     url: 'https://github.com/juancv3d',
@@ -29,7 +30,7 @@ function SocialLinks() {
 
   return (
     <nav className="social-links" aria-label="Social links">
-      {links.map((link) => (
+      {externalLinks.map((link) => (
         <a
           key={link.name}
           href={link.url}
@@ -43,6 +44,15 @@ function SocialLinks() {
           <link.icon />
         </a>
       ))}
+      <Link
+        to="/itinerario"
+        aria-label="Itinerario Europa"
+        title="Itinerario Europa"
+        onMouseEnter={playHover}
+        onClick={playClick}
+      >
+        <FaMapMarkedAlt />
+      </Link>
     </nav>
   );
 }

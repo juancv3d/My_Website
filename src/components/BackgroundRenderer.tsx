@@ -1,7 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { useBackground } from '../context';
-import ParticlesBackground from './backgrounds/ParticlesBackground';
-import { SpaceBackground, FluidBackground } from './backgrounds';
+
+// Lazy load background components for code splitting
+const ParticlesBackground = lazy(() => import('./backgrounds/ParticlesBackground'));
+const SpaceBackground = lazy(() => import('./backgrounds/SpaceBackground'));
+const FluidBackground = lazy(() => import('./backgrounds/FluidBackground'));
+
+// Loading fallback component
+const BackgroundFallback = () => (
+  <div className="background-loading" style={{
+    position: 'absolute',
+    inset: 0,
+    background: 'linear-gradient(135deg, #0a0a0f 0%, #111118 100%)',
+  }} />
+);
 
 const BackgroundRenderer = () => {
   const { backgroundTheme, darkMode } = useBackground();
@@ -37,7 +49,9 @@ const BackgroundRenderer = () => {
 
   return (
     <div className={`background-wrapper ${isTransitioning ? 'fade-out' : 'fade-in'}`}>
-      {renderBackground()}
+      <Suspense fallback={<BackgroundFallback />}>
+        {renderBackground()}
+      </Suspense>
     </div>
   );
 };

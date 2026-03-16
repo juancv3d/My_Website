@@ -1,7 +1,9 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { BackgroundProvider, useBackground } from './context';
 import { ThemeToggle, SocialLinks, BackgroundSelector, BackgroundRenderer } from './components';
+import Itinerario from './pages/Itinerario';
 
-function AppContent() {
+function HomePage() {
   const { darkMode, backgroundTheme } = useBackground();
 
   return (
@@ -24,9 +26,14 @@ function AppContent() {
 
 function App() {
   return (
-    <BackgroundProvider>
-      <AppContent />
-    </BackgroundProvider>
+    <BrowserRouter>
+      <BackgroundProvider>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/itinerario" element={<Itinerario />} />
+        </Routes>
+      </BackgroundProvider>
+    </BrowserRouter>
   );
 }
 
