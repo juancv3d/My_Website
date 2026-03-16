@@ -111,6 +111,7 @@ function Itinerario() {
   const [showReservas, setShowReservas] = useState(false);
   const [snapPoint, setSnapPoint] = useState<SnapPoint>('half');
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const [showMapLegend, setShowMapLegend] = useState(false);
   const mapRef = useRef<L.Map | null>(null);
 
   const snapPointHeights = useMemo(() => ({
@@ -314,6 +315,17 @@ function Itinerario() {
     const nextDest = destinations[nextIndex];
     setSelectedDestination(nextDest);
     setFlyTo(nextDest);
+    setTimeout(() => setFlyTo(null), 100);
+  }, [selectedDestination, destinations]);
+
+  const handlePrevDestination = useCallback(() => {
+    const currentIndex = selectedDestination 
+      ? destinations.findIndex(d => d.id === selectedDestination.id)
+      : 0;
+    const prevIndex = currentIndex <= 0 ? destinations.length - 1 : currentIndex - 1;
+    const prevDest = destinations[prevIndex];
+    setSelectedDestination(prevDest);
+    setFlyTo(prevDest);
     setTimeout(() => setFlyTo(null), 100);
   }, [selectedDestination, destinations]);
 
@@ -536,6 +548,15 @@ function Itinerario() {
           </button>
           <button 
             className="map-control-btn" 
+            onClick={handlePrevDestination}
+            title="Destino anterior"
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+              <path d="M16 5l-8 7 8 7V5z"/>
+            </svg>
+          </button>
+          <button 
+            className="map-control-btn" 
             onClick={handleNextDestination}
             title="Siguiente destino"
           >
@@ -543,7 +564,25 @@ function Itinerario() {
               <path d="M8 5l8 7-8 7V5z"/>
             </svg>
           </button>
+          <button 
+            className={`map-control-btn ${showMapLegend ? 'active' : ''}`}
+            onClick={() => setShowMapLegend(!showMapLegend)}
+            title="Leyenda"
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+              <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2"/>
+              <text x="12" y="17" textAnchor="middle" fontSize="14" fontWeight="bold">i</text>
+            </svg>
+          </button>
         </div>
+        {showMapLegend && (
+          <div className="map-legend-overlay">
+            <div className="legend-item"><span className="line flight"></span> Vuelo</div>
+            <div className="legend-item"><span className="line train"></span> Tren</div>
+            <div className="legend-item"><span className="line ferry"></span> Ferry</div>
+            <div className="legend-item"><span className="line bus"></span> Bus/Taxi</div>
+          </div>
+        )}
       </div>
 
       {modalOpen && selectedDestination && (

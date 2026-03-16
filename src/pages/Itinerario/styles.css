@@ -702,11 +702,65 @@
 
 .map-control-btn:first-child {
   border-radius: 2px 2px 0 0;
+}
+
+.map-control-btn:not(:last-child) {
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .map-control-btn:last-child {
   border-radius: 0 0 2px 2px;
+}
+
+.map-control-btn.active {
+  background: #e0e0e0;
+}
+
+.map-legend-overlay {
+  position: absolute;
+  bottom: 30px;
+  left: 10px;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 10px 14px;
+  border-radius: 4px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+  border: 2px solid rgba(0, 0, 0, 0.2);
+}
+
+.map-legend-overlay .legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.map-legend-overlay .legend-item:last-child {
+  margin-bottom: 0;
+}
+
+.map-legend-overlay .line {
+  width: 20px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.map-legend-overlay .line.flight {
+  background: repeating-linear-gradient(90deg, #5856D6 0, #5856D6 6px, transparent 6px, transparent 10px);
+}
+
+.map-legend-overlay .line.train {
+  background: #34C759;
+}
+
+.map-legend-overlay .line.ferry {
+  background: repeating-linear-gradient(90deg, #007AFF 0, #007AFF 6px, transparent 6px, transparent 10px);
+}
+
+.map-legend-overlay .line.bus {
+  background: repeating-linear-gradient(90deg, #FF9500 0, #FF9500 4px, transparent 4px, transparent 8px);
 }
 
 .custom-marker {
