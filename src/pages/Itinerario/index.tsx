@@ -222,8 +222,12 @@ function Itinerario() {
   }, [todayDestination]);
 
   const handleCollapseSheet = useCallback(() => {
-    setSnapPoint('collapsed');
-  }, []);
+    if (snapPoint === 'collapsed') {
+      setSnapPoint('half');
+    } else {
+      setSnapPoint('collapsed');
+    }
+  }, [snapPoint]);
 
   const handleShowNextTransport = useCallback(() => {
     if (nextTransport) {
@@ -738,7 +742,7 @@ function Itinerario() {
           </svg>
           <span>Hoy</span>
         </button>
-        <button className="quick-action-btn" onClick={handleCollapseSheet}>
+        <button className={`quick-action-btn ${snapPoint === 'collapsed' ? 'active' : ''}`} onClick={handleCollapseSheet}>
           <svg className="quick-action-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
             <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 12h18M12 3v18"/>
           </svg>
