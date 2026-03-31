@@ -12,13 +12,15 @@ const STORAGE_KEY_VERSION = 'itinerario-data-version';
 const DATA_VERSION = '2';
 
 function clearStaleStorage() {
-  const storedVersion = localStorage.getItem(STORAGE_KEY_VERSION);
-  if (storedVersion !== DATA_VERSION) {
-    localStorage.removeItem(STORAGE_KEY_DESTINATIONS);
-    localStorage.removeItem(STORAGE_KEY_RESERVATIONS);
-    localStorage.removeItem(STORAGE_KEY_FLIGHT_GROUPS);
-    localStorage.setItem(STORAGE_KEY_VERSION, DATA_VERSION);
-  }
+  try {
+    const storedVersion = localStorage.getItem(STORAGE_KEY_VERSION);
+    if (storedVersion !== DATA_VERSION) {
+      localStorage.removeItem(STORAGE_KEY_DESTINATIONS);
+      localStorage.removeItem(STORAGE_KEY_RESERVATIONS);
+      localStorage.removeItem(STORAGE_KEY_FLIGHT_GROUPS);
+      localStorage.setItem(STORAGE_KEY_VERSION, DATA_VERSION);
+    }
+  } catch {}
 }
 
 clearStaleStorage();
