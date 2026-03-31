@@ -90,24 +90,6 @@
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-.flights-section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 16px;
-  background: rgba(0, 122, 255, 0.04);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-}
-
-.flights-section-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #1d1d1f;
-}
-
 .flights-count-badge {
   font-size: 11px;
   color: #007AFF;
@@ -297,16 +279,6 @@
 .flights-icon,
 .reservas-icon {
   font-size: 16px;
-}
-
-.flights-code {
-  margin-left: auto;
-  font-family: 'Space Mono', monospace;
-  font-size: 12px;
-  color: #007AFF;
-  background: rgba(0, 122, 255, 0.1);
-  padding: 3px 8px;
-  border-radius: 4px;
 }
 
 .reservas-count {

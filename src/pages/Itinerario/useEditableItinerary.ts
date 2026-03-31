@@ -6,6 +6,22 @@ import { wizzAirFlight, itaAirwaysFlight, vuelingFlight } from './destinations/f
 const STORAGE_KEY_DESTINATIONS = 'itinerario-destinations';
 const STORAGE_KEY_RESERVATIONS = 'itinerario-reservations';
 const STORAGE_KEY_FLIGHT_GROUPS = 'itinerario-flight-groups';
+const STORAGE_KEY_VERSION = 'itinerario-data-version';
+
+// Bump this whenever default data changes to force localStorage reset
+const DATA_VERSION = '2';
+
+function clearStaleStorage() {
+  const storedVersion = localStorage.getItem(STORAGE_KEY_VERSION);
+  if (storedVersion !== DATA_VERSION) {
+    localStorage.removeItem(STORAGE_KEY_DESTINATIONS);
+    localStorage.removeItem(STORAGE_KEY_RESERVATIONS);
+    localStorage.removeItem(STORAGE_KEY_FLIGHT_GROUPS);
+    localStorage.setItem(STORAGE_KEY_VERSION, DATA_VERSION);
+  }
+}
+
+clearStaleStorage();
 
 const defaultReservations: Reservation[] = [
   { id: 'uffizi', name: 'Uffizi Florencia', status: 'pending' },
@@ -121,14 +137,6 @@ export function useEditableItinerary() {
     });
   }, []);
 
-  const updateFlightGroup = useCallback((groupId: string, updates: Partial<Omit<FlightGroup, 'id'>>) => {
-    setFlightGroups(prev => {
-      const next = prev.map(g => (g.id === groupId ? { ...g, ...updates } : g));
-      saveToStorage(STORAGE_KEY_FLIGHT_GROUPS, next);
-      return next;
-    });
-  }, []);
-
   const deleteFlightGroup = useCallback((groupId: string) => {
     setFlightGroups(prev => {
       const next = prev.filter(g => g.id !== groupId);
@@ -142,22 +150,6 @@ export function useEditableItinerary() {
       const next = prev.map(g => {
         if (g.id === groupId) {
           return { ...g, flights: [...g.flights, { ...flight, id: generateId() }] };
-        }
-        return g;
-      });
-      saveToStorage(STORAGE_KEY_FLIGHT_GROUPS, next);
-      return next;
-    });
-  }, []);
-
-  const updateFlight = useCallback((groupId: string, flightId: string, updates: Partial<Omit<Flight, 'id'>>) => {
-    setFlightGroups(prev => {
-      const next = prev.map(g => {
-        if (g.id === groupId) {
-          return {
-            ...g,
-            flights: g.flights.map(f => (f.id === flightId ? { ...f, ...updates } : f)),
-          };
         }
         return g;
       });
@@ -197,10 +189,8 @@ export function useEditableItinerary() {
     toggleReservationStatus,
     updateReservationCode,
     addFlightGroup,
-    updateFlightGroup,
     deleteFlightGroup,
     addFlight,
-    updateFlight,
     deleteFlight,
     resetAll,
   };

@@ -76,6 +76,22 @@ Personal website built with React 18 + TypeScript + Vite. Includes interactive b
 - `src/pages/Itinerario/useEditableItinerary.ts` — Cleaned up duplicate reservations
 - `src/pages/Itinerario/destinations/madrid.ts` — Added arrival day activity
 
+### Session: 2026-03-31 (Cleanup)
+
+**Summary:** Removed unused legacy code and added localStorage data versioning to fix stale cached data.
+
+**Changes:**
+- Removed unused CSS: `.flights-section-header`, `.flights-section-title`, `.flights-code`
+- Removed unused JS: `updateFlightGroup`, `updateFlight` from useEditableItinerary hook
+- Added `DATA_VERSION` mechanism to force localStorage reset when default data changes
+
+**Decisions:**
+- Simple version string (`DATA_VERSION = '2'`) checked at module load — bump when defaults change
+- Keeps user edits intact as long as version matches; only clears on code data changes
+
+**Issues & Fixes:**
+- Madrid not showing on Day 1 in deployed app → stale localStorage had old destination data without 24 abr activity → DATA_VERSION forces cache clear on next load
+
 ---
 
 ### Session: 2026-03-16 (Evening)
