@@ -73,69 +73,6 @@ Durante la Segunda Guerra Mundial, Salerno fue escenario del desembarco aliado e
     ],
   },
   {
-    id: 'positano',
-    name: 'Positano',
-    country: 'Italia',
-    coordinates: [40.6281, 14.4850],
-    dates: '28 abr',
-    nights: 0,
-    weather: { temp: '20°C', condition: 'sunny' },
-    history: `Positano fue un próspero puerto marítimo durante los siglos XVI y XVII, pero decayó cuando la navegación a vela fue reemplazada por barcos de vapor. En el siglo XX, artistas e intelectuales lo redescubrieron, y John Steinbeck escribió su famoso ensayo "Positano" en 1953, poniéndolo en el mapa del turismo internacional.
-
-Las casas de colores pastel que se derraman por el acantilado hacia el mar se han convertido en una de las imágenes más icónicas de Italia.`,
-    highlights: [
-      'Casas coloridas en cascada hacia el mar',
-      'Playas con vistas espectaculares',
-      'Boutiques de moda local (sandalias hechas a mano)',
-      'Ambiente romántico y fotogénico',
-    ],
-    pointsOfInterest: [
-      {
-        name: 'Spiaggia Grande',
-        description: 'La playa principal de Positano, con vistas a las casas coloridas y la cúpula de Santa Maria Assunta.',
-        type: 'beach',
-        tip: 'Llega temprano para conseguir buen sitio. Alquiler de tumbonas ~€20-30.',
-      },
-      {
-        name: 'Chiesa di Santa Maria Assunta',
-        description: 'Iglesia del siglo XIII con icónica cúpula de mayólica que domina el pueblo.',
-        type: 'church',
-        tip: 'Interior con un icono bizantino de la Virgen Negra del siglo XIII.',
-      },
-      {
-        name: 'Sentiero degli Dei',
-        description: 'El "Camino de los Dioses", ruta de senderismo con vistas espectaculares.',
-        type: 'viewpoint',
-        tip: 'El sendero completo toma 4-5 horas. También se puede hacer un tramo corto.',
-      },
-      {
-        name: 'Via dei Mulini',
-        description: 'Calle principal con boutiques, galerías y tiendas de sandalias artesanales.',
-        type: 'neighborhood',
-        tip: 'Las sandalias hechas a medida son un recuerdo clásico.',
-      },
-    ],
-    transports: [
-      {
-        type: 'ferry',
-        from: 'Salerno',
-        to: 'Positano',
-        duration: '1h 10min',
-        price: '€14-18',
-        link: 'https://www.travelmar.it',
-        notes: 'Ferries TravelMar varias veces al día. Vista espectacular de la costa.',
-      },
-    ],
-    activities: [
-      { date: '28 abr', description: 'Ferry desde Salerno, explorar pueblo, playa, regreso a Salerno' },
-    ],
-    tips: [
-      'El pueblo tiene MUCHAS escaleras - lleva calzado cómodo',
-      'Los precios son los más altos de la costa',
-      'Mejor en temporada baja o temprano/tarde para evitar multitudes',
-    ],
-  },
-  {
     id: 'amalfi',
     name: 'Amalfi',
     country: 'Italia',
@@ -264,6 +201,69 @@ Gore Vidal vivió aquí 30 años. El pueblo, encaramado 350 metros sobre el mar,
       'Llega temprano para evitar multitudes',
       'Villa Cimbrone requiere caminar - lleva agua',
       'Los restaurantes son caros pero la comida suele ser excelente',
+    ],
+  },
+  {
+    id: 'positano',
+    name: 'Positano',
+    country: 'Italia',
+    coordinates: [40.6281, 14.4850],
+    dates: '28 abr',
+    nights: 0,
+    weather: { temp: '20°C', condition: 'sunny' },
+    history: `Positano fue un próspero puerto marítimo durante los siglos XVI y XVII, pero decayó cuando la navegación a vela fue reemplazada por barcos de vapor. En el siglo XX, artistas e intelectuales lo redescubrieron, y John Steinbeck escribió su famoso ensayo "Positano" en 1953, poniéndolo en el mapa del turismo internacional.
+
+Las casas de colores pastel que se derraman por el acantilado hacia el mar se han convertido en una de las imágenes más icónicas de Italia.`,
+    highlights: [
+      'Casas coloridas en cascada hacia el mar',
+      'Playas con vistas espectaculares',
+      'Boutiques de moda local (sandalias hechas a mano)',
+      'Ambiente romántico y fotogénico',
+    ],
+    pointsOfInterest: [
+      {
+        name: 'Spiaggia Grande',
+        description: 'La playa principal de Positano, con vistas a las casas coloridas y la cúpula de Santa Maria Assunta.',
+        type: 'beach',
+        tip: 'Llega temprano para conseguir buen sitio. Alquiler de tumbonas ~€20-30.',
+      },
+      {
+        name: 'Chiesa di Santa Maria Assunta',
+        description: 'Iglesia del siglo XIII con icónica cúpula de mayólica que domina el pueblo.',
+        type: 'church',
+        tip: 'Interior con un icono bizantino de la Virgen Negra del siglo XIII.',
+      },
+      {
+        name: 'Sentiero degli Dei',
+        description: 'El "Camino de los Dioses", ruta de senderismo con vistas espectaculares.',
+        type: 'viewpoint',
+        tip: 'El sendero completo toma 4-5 horas. También se puede hacer un tramo corto.',
+      },
+      {
+        name: 'Via dei Mulini',
+        description: 'Calle principal con boutiques, galerías y tiendas de sandalias artesanales.',
+        type: 'neighborhood',
+        tip: 'Las sandalias hechas a medida son un recuerdo clásico.',
+      },
+    ],
+    transports: [
+      {
+        type: 'ferry',
+        from: 'Salerno',
+        to: 'Positano',
+        duration: '1h 10min',
+        price: '€14-18',
+        link: 'https://www.travelmar.it',
+        notes: 'Ferries TravelMar varias veces al día. Vista espectacular de la costa.',
+      },
+    ],
+    activities: [
+      { date: '28 abr', description: 'Ferry desde Salerno, explorar pueblo, playa, regreso a Salerno' },
+    ],
+    tips: [
+      'El pueblo tiene MUCHAS escaleras - lleva calzado cómodo',
+      'Los precios son los más altos de la costa',
+      'Mejor en temporada baja o temprano/tarde para evitar multitudes',
     ],
   },
   {
