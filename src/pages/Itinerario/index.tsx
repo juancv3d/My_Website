@@ -223,7 +223,7 @@ function Itinerario() {
 
   const handleCollapseSheet = useCallback(() => {
     if (snapPoint === 'collapsed') {
-      setSnapPoint('half');
+      setSnapPoint('expanded');
     } else {
       setSnapPoint('collapsed');
     }
