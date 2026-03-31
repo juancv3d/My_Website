@@ -8,13 +8,6 @@ const STORAGE_KEY_RESERVATIONS = 'itinerario-reservations';
 const STORAGE_KEY_FLIGHT_GROUPS = 'itinerario-flight-groups';
 
 const defaultReservations: Reservation[] = [
-  { id: 'vuelos', name: 'Vuelos KLM', status: 'confirmed', code: 'ZIFHKS' },
-  { id: 'vuelo-wizz', name: 'Wizz Air MAD→FCO', status: 'confirmed', code: 'KNKJVW' },
-  { id: 'tren-rom-sal', name: 'Italo Roma→Salerno', status: 'confirmed', code: 'WYI5VL' },
-  { id: 'tren-sal-flo', name: 'Italo Salerno→Florencia', status: 'confirmed', code: 'MC4T3P' },
-  { id: 'vuelo-ita', name: 'ITA Airways FLR→NCE', status: 'confirmed', code: '1122-428-852' },
-  { id: 'vuelo-niz-bcn', name: 'Vueling NCE→BCN', status: 'confirmed', code: '1123-116-110' },
-  { id: 'ave-bcn-mad', name: 'OUIGO Barcelona→Madrid', status: 'confirmed', code: 'AQ44HJ' },
   { id: 'uffizi', name: 'Uffizi Florencia', status: 'pending' },
   { id: 'accademia', name: "Galleria dell'Accademia", status: 'pending' },
   { id: 'sagrada', name: 'Sagrada Familia Barcelona', status: 'pending' },

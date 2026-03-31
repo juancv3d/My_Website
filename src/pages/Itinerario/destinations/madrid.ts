@@ -99,6 +99,7 @@ El Siglo de Oro español (XVI-XVII) vio florecer a Velázquez, Cervantes y Lope 
     },
   ],
   activities: [
+    { date: '24 abr', description: 'Llegada AMS (10:50), vuelo AMS→MAD (KL1505 13:50→16:25), instalarse, paseo centro', isBase: true },
     { date: '5 may', description: 'Llegada desde Barcelona (20:42), paseo centro, Plaza Mayor, Sol, La Latina', isBase: true },
     { date: '6 may', description: 'Museo del Prado, Retiro, tiempo con familia' },
     { date: '7 may', description: 'Salida al aeropuerto, vuelo 06:00 a Ámsterdam' },

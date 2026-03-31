@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import ArrowPolyline from './ArrowPolyline';
 import L from 'leaflet';
@@ -10,11 +10,18 @@ import EditDestinationModal from './EditDestinationModal';
 import AddFlightModal from './AddFlightModal';
 import { useEditableItinerary } from './useEditableItinerary';
 import { useDragGesture, SnapPoint } from './hooks/useDragGesture';
+import {
+  getTodayDestinationIndex,
+  collectTrainReservations,
+  getNextTransport,
+  formatMinutes,
+  buildDayByDay,
+} from './utils/tripDate';
 import './styles.css';
 
-const TRIP_START = new Date('2026-04-23');
+const TRIP_START = new Date('2026-04-24');
 const TRIP_END = new Date('2026-05-07');
-const TRIP_DAYS = 15;
+const TRIP_DAYS = 14;
 
 const countryFlags: Record<string, string> = {
   'Italia': '🇮🇹',
@@ -109,10 +116,15 @@ function Itinerario() {
   const [flyTo, setFlyTo] = useState<Destination | null>(null);
   const [showFlights, setShowFlights] = useState(false);
   const [showReservas, setShowReservas] = useState(false);
+  const [showTrenes, setShowTrenes] = useState(false);
   const [snapPoint, setSnapPoint] = useState<SnapPoint>('half');
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [showMapLegend, setShowMapLegend] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'destino' | 'dia'>('destino');
   const mapRef = useRef<L.Map | null>(null);
+  const todayCardRef = useRef<HTMLDivElement | null>(null);
+  const sidebarScrollRef = useRef<HTMLDivElement | null>(null);
 
   const snapPointHeights = useMemo(() => ({
     collapsed: 140,
@@ -144,6 +156,80 @@ function Itinerario() {
   const countdown = getCountdownInfo();
   const pendingCount = reservations.filter(r => r.status === 'pending').length;
   const totalFlights = flightGroups.reduce((acc, g) => acc + g.flights.length, 0);
+
+  // Feature 1: Today's destination
+  const todayIndex = useMemo(() => getTodayDestinationIndex(destinations), [destinations]);
+  const todayDestination = todayIndex >= 0 ? destinations[todayIndex] : null;
+
+  // Feature 2: Train reservations
+  const trainReservations = useMemo(() => collectTrainReservations(destinations), [destinations]);
+
+  // Feature 4: Next transport countdown
+  const [nextTransport, setNextTransport] = useState(() => getNextTransport(destinations, flightGroups));
+  useEffect(() => {
+    const update = () => setNextTransport(getNextTransport(destinations, flightGroups));
+    update();
+    const interval = setInterval(update, 60000);
+    return () => clearInterval(interval);
+  }, [destinations, flightGroups]);
+
+  // Feature 5: Day-by-day data
+  const dayByDay = useMemo(() => buildDayByDay(destinations), [destinations]);
+
+  // Feature 3: Copy to clipboard
+  const copyToClipboard = useCallback((text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setToastMessage('¡Copiado!');
+      setTimeout(() => setToastMessage(null), 2000);
+    }).catch(() => {
+      setToastMessage('Error al copiar');
+      setTimeout(() => setToastMessage(null), 2000);
+    });
+  }, []);
+
+  // Feature 1: Auto-scroll to today & fly map
+  const hasAutoScrolled = useRef(false);
+  useEffect(() => {
+    if (hasAutoScrolled.current) return;
+    if (todayDestination) {
+      hasAutoScrolled.current = true;
+      // Fly map to today's location
+      setTimeout(() => {
+        if (mapRef.current) {
+          mapRef.current.flyTo(todayDestination.coordinates, 10, { duration: 1.5 });
+        }
+      }, 500);
+      // Auto-scroll sidebar to today's card
+      setTimeout(() => {
+        if (todayCardRef.current && sidebarScrollRef.current) {
+          todayCardRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 800);
+      setSelectedDestination(todayDestination);
+    }
+  }, [todayDestination]);
+
+  // Feature 6: Mobile quick actions
+  const handleScrollToToday = useCallback(() => {
+    if (todayDestination) {
+      setSelectedDestination(todayDestination);
+      setFlyTo(todayDestination);
+      setTimeout(() => setFlyTo(null), 100);
+      if (todayCardRef.current) {
+        todayCardRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [todayDestination]);
+
+  const handleCollapseSheet = useCallback(() => {
+    setSnapPoint('collapsed');
+  }, []);
+
+  const handleShowNextTransport = useCallback(() => {
+    if (nextTransport) {
+      copyToClipboard(nextTransport.code);
+    }
+  }, [nextTransport, copyToClipboard]);
 
   const toggleGroupExpanded = (groupId: string) => {
     setExpandedGroups(prev => {
@@ -236,7 +322,14 @@ function Itinerario() {
           <span className={`flight-group-toggle ${isExpanded ? 'open' : ''}`}>›</span>
           <div className="flight-group-info">
             <span className="flight-group-airline">✈️ {group.name}</span>
-            <span className="flight-group-code">{group.confirmationCode}</span>
+            <button
+              className="copy-code-btn"
+              onClick={(e) => { e.stopPropagation(); copyToClipboard(group.confirmationCode); }}
+              title="Copiar código"
+            >
+              <span className="flight-group-code">{group.confirmationCode}</span>
+              <span className="copy-icon">📋</span>
+            </button>
             <span className="flight-group-count">({group.flights.length} vuelos)</span>
           </div>
           <div className="flight-group-actions">
@@ -350,32 +443,89 @@ function Itinerario() {
           </div>
         </div>
 
-        <div className="sidebar-scrollable">
-        <div className="flights-section">
-          <div className="flights-section-header">
-            <div className="flights-section-title">
-              <span>✈️ Vuelos</span>
-              <span className="flights-count-badge">{flightGroups.length} reservas · {totalFlights} vuelos</span>
+        <div className="sidebar-scrollable" ref={sidebarScrollRef}>
+
+        {/* Feature 4: Next Transport Countdown */}
+        {nextTransport && (
+          <div className="next-transport-banner" onClick={() => copyToClipboard(nextTransport.code)}>
+            <div className="next-transport-info">
+              <span className="next-transport-label">{nextTransport.label}</span>
+              <span className="next-transport-time">en {formatMinutes(nextTransport.minutesUntil)}</span>
             </div>
-            <button 
-              className="add-flight-btn"
-              onClick={() => setAddFlightModalOpen(true)}
+            <button
+              className="copy-code-btn compact"
+              onClick={(e) => { e.stopPropagation(); copyToClipboard(nextTransport.code); }}
             >
-              + Agregar
+              <span className="next-transport-code">{nextTransport.code}</span>
+              <span className="copy-icon">📋</span>
             </button>
           </div>
-          
+        )}
+
+        <div className="flights-section">
           <button 
             className="flights-toggle"
             onClick={() => setShowFlights(!showFlights)}
           >
-            <span>Ver todas las reservas</span>
+            <span className="flights-icon">✈️</span>
+            <span>Vuelos</span>
+            <span className="flights-count-badge">{flightGroups.length} reservas · {totalFlights} vuelos</span>
             <span className={`toggle-arrow ${showFlights ? 'open' : ''}`}>›</span>
           </button>
           
           {showFlights && (
             <div className="flight-groups-container">
               {flightGroups.map(renderFlightGroup)}
+              <button 
+                className="add-flight-btn"
+                onClick={() => setAddFlightModalOpen(true)}
+              >
+                + Agregar vuelo
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Feature 2: Trenes Section */}
+        <div className="trenes-section">
+          <button
+            className="trenes-toggle"
+            onClick={() => setShowTrenes(!showTrenes)}
+          >
+            <span className="trenes-icon">🚆</span>
+            <span>Trenes</span>
+            <span className="trenes-count">{trainReservations.length} reservas</span>
+            <span className={`toggle-arrow ${showTrenes ? 'open' : ''}`}>›</span>
+          </button>
+
+          {showTrenes && (
+            <div className="trenes-list">
+              {trainReservations.map((train) => (
+                <div key={train.id} className="train-card">
+                  <div className="train-header">
+                    <span className="train-operator">{train.operator}</span>
+                    <span className="train-number">{train.trainNumber}</span>
+                  </div>
+                  <div className="train-route">
+                    <span className="train-from">{train.from.split('(')[0].trim()}</span>
+                    <span className="train-arrow">→</span>
+                    <span className="train-to">{train.to.split('(')[0].trim()}</span>
+                  </div>
+                  <div className="train-details">
+                    {train.date && <span className="train-date">{train.date}</span>}
+                    {train.departure && <span className="train-time">{train.departure} → {train.arrival}</span>}
+                    <span className="train-duration">{train.duration}</span>
+                  </div>
+                  <button
+                    className="copy-code-btn"
+                    onClick={() => copyToClipboard(train.code)}
+                    title="Copiar código"
+                  >
+                    <span className="train-code">{train.code}</span>
+                    <span className="copy-icon">📋</span>
+                  </button>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -403,6 +553,16 @@ function Itinerario() {
                   >
                     {reserva.status === 'confirmed' ? '✓ Confirmado' : '⏳ Pendiente'}
                   </span>
+                  {reserva.status === 'confirmed' && reserva.code && (
+                    <button
+                      className="copy-code-btn compact"
+                      onClick={(e) => { e.stopPropagation(); copyToClipboard(reserva.code!); }}
+                      title="Copiar código"
+                    >
+                      <span className="reserva-code">{reserva.code}</span>
+                      <span className="copy-icon">📋</span>
+                    </button>
+                  )}
                   {reserva.status === 'confirmed' && (
                     <input
                       className="reserva-code-input"
@@ -418,6 +578,23 @@ function Itinerario() {
           )}
         </div>
         
+        {/* Feature 5: View Mode Toggle */}
+        <div className="view-toggle-container">
+          <button
+            className={`view-toggle-btn ${viewMode === 'destino' ? 'active' : ''}`}
+            onClick={() => setViewMode('destino')}
+          >
+            Por Destino
+          </button>
+          <button
+            className={`view-toggle-btn ${viewMode === 'dia' ? 'active' : ''}`}
+            onClick={() => setViewMode('dia')}
+          >
+            Por Dia
+          </button>
+        </div>
+
+        {viewMode === 'destino' ? (
         <div className="itinerary-list">
           {groupedDestinations.map((group) => (
             <div key={group.country} className="country-group">
@@ -429,17 +606,21 @@ function Itinerario() {
                 {group.destinations.map((dest, idx) => {
                   const nextDest = group.destinations[idx + 1];
                   const transport = nextDest ? getTransportBetween(dest.id, nextDest.id, destinations) : null;
+                  const isToday = todayDestination?.id === dest.id;
                   
                   return (
-                    <div key={dest.id} className="timeline-item">
-                      <div className={`timeline-marker ${dest.nights === 0 ? 'excursion' : ''}`}></div>
+                    <div key={dest.id} className="timeline-item" ref={isToday ? todayCardRef : undefined}>
+                      <div className={`timeline-marker ${dest.nights === 0 ? 'excursion' : ''} ${isToday ? 'today' : ''}`}></div>
                       {transport && <div className="timeline-transport">{transport}</div>}
                       <div
-                        className={`timeline-card ${selectedDestination?.id === dest.id ? 'active' : ''}`}
+                        className={`timeline-card ${selectedDestination?.id === dest.id ? 'active' : ''} ${isToday ? 'today' : ''}`}
                         onClick={() => handleItineraryClick(dest)}
                       >
                         <div className="timeline-card-header">
-                          <span className="timeline-dates">{dest.dates}</span>
+                          <div className="timeline-dates-row">
+                            <span className="timeline-dates">{dest.dates}</span>
+                            {isToday && <span className="hoy-badge">HOY</span>}
+                          </div>
                           {dest.weather && (
                             <span className="weather-badge">
                               <span className="weather-icon">{weatherEmojis[dest.weather.condition]}</span>
@@ -468,6 +649,55 @@ function Itinerario() {
             </div>
           ))}
         </div>
+        ) : (
+        /* Feature 5: Day-by-Day View */
+        <div className="itinerary-list day-view">
+          {dayByDay.map((day) => {
+            const isToday = (() => {
+              const now = new Date();
+              const nowDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+              return day.date.getTime() === nowDate.getTime();
+            })();
+
+            return (
+              <div
+                key={day.dayNumber}
+                className={`day-card ${isToday ? 'today' : ''}`}
+                ref={isToday ? todayCardRef : undefined}
+              >
+                <div className="day-card-header">
+                  <span className="day-number">Dia {day.dayNumber}</span>
+                  <span className="day-date">{day.dateLabel}</span>
+                  {isToday && <span className="hoy-badge">HOY</span>}
+                </div>
+                {day.destinations.length > 0 ? (
+                  <div className="day-destinations">
+                    {day.destinations.map((dest) => (
+                      <div
+                        key={dest.id}
+                        className="day-dest-item"
+                        onClick={() => handleItineraryClick(dest)}
+                      >
+                        <span className="day-dest-flag">{countryFlags[dest.country] || '🌍'}</span>
+                        <span className="day-dest-name">{dest.name}</span>
+                        {dest.nights > 0 && <span className="day-dest-nights">{dest.nights}n</span>}
+                      </div>
+                    ))}
+                    {day.destinations[0]?.activities
+                      .filter(a => a.date === day.dateLabel)
+                      .map((act, i) => (
+                        <div key={i} className="day-activity">{act.description}</div>
+                      ))
+                    }
+                  </div>
+                ) : (
+                  <div className="day-empty">Dia de viaje</div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        )}
 
         <div className="legend">
           <h3>Leyenda</h3>
@@ -493,6 +723,27 @@ function Itinerario() {
           </div>
         )}
         </div>
+      </div>
+
+      {/* Feature 3: Toast notification */}
+      {toastMessage && (
+        <div className="toast-notification">{toastMessage}</div>
+      )}
+
+      {/* Feature 6: Mobile Quick Actions */}
+      <div className="mobile-quick-actions">
+        <button className="quick-action-btn" onClick={handleScrollToToday}>
+          <span className="quick-action-icon">📍</span>
+          <span>Hoy</span>
+        </button>
+        <button className="quick-action-btn" onClick={handleCollapseSheet}>
+          <span className="quick-action-icon">🗺️</span>
+          <span>Mapa</span>
+        </button>
+        <button className="quick-action-btn" onClick={handleShowNextTransport}>
+          <span className="quick-action-icon">⏱️</span>
+          <span>Siguiente</span>
+        </button>
       </div>
 
       <div className="map-wrapper">

@@ -48,6 +48,36 @@ Personal website built with React 18 + TypeScript + Vite. Includes interactive b
 
 ## Recent Sessions
 
+### Session: 2026-03-31
+
+**Summary:** Added 6 major UX improvements to make the itinerary app more useful during the trip.
+
+**Changes:**
+- Feature 1: "HOY" badge on today's destination, auto-scroll sidebar + auto-fly map to current location
+- Feature 2: Trenes section (collapsible, like Vuelos) showing Italo/OUIGO reservations with codes
+- Feature 3: Copy-to-clipboard on all confirmation codes (flights, trains, reservas) with toast notification
+- Feature 4: Next transport countdown banner (shows when departure is within 24h, updates every minute)
+- Feature 5: Day-by-day view toggle ("Por Destino" vs "Por Dia") with 14-day chronological timeline
+- Feature 6: Mobile quick actions bar (Hoy/Mapa/Siguiente) sticky at bottom
+- Unified Vuelos/Trenes/Reservas toggle UI (removed extra header line from Vuelos)
+- Removed duplicate confirmed transport reservations (now shown in Vuelos/Trenes sections)
+- Added Madrid activity for 24 abr (arrival day) so Day 1 starts from Madrid arrival
+- Created `utils/tripDate.ts` with date parsing, today detection, train extraction, countdown logic
+
+**Decisions:**
+- Trip Day 1 = April 24 (Madrid arrival), not April 23 (transatlantic flight day)
+- Trains extracted dynamically from destination transport data (no separate data file needed)
+- Activity-date matching in day-by-day builder covers destinations that span non-contiguous dates (Madrid: 24 abr + 5-7 may)
+
+**Files:**
+- `src/pages/Itinerario/utils/tripDate.ts` (NEW) — Date utilities for all 6 features
+- `src/pages/Itinerario/index.tsx` — All feature integrations
+- `src/pages/Itinerario/styles.css` — ~500 lines of new feature CSS
+- `src/pages/Itinerario/useEditableItinerary.ts` — Cleaned up duplicate reservations
+- `src/pages/Itinerario/destinations/madrid.ts` — Added arrival day activity
+
+---
+
 ### Session: 2026-03-16 (Evening)
 
 **Summary:** Improved mobile responsive design for the itinerary page
