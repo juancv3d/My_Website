@@ -350,6 +350,7 @@ function Itinerario() {
           </div>
         </div>
 
+        <div className="sidebar-scrollable">
         <div className="flights-section">
           <div className="flights-section-header">
             <div className="flights-section-title">
@@ -491,6 +492,7 @@ function Itinerario() {
             </button>
           </div>
         )}
+        </div>
       </div>
 
       <div className="map-wrapper">
