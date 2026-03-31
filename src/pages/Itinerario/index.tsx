@@ -733,15 +733,21 @@ function Itinerario() {
       {/* Feature 6: Mobile Quick Actions */}
       <div className="mobile-quick-actions">
         <button className="quick-action-btn" onClick={handleScrollToToday}>
-          <span className="quick-action-icon">📍</span>
+          <svg className="quick-action-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>
+          </svg>
           <span>Hoy</span>
         </button>
         <button className="quick-action-btn" onClick={handleCollapseSheet}>
-          <span className="quick-action-icon">🗺️</span>
+          <svg className="quick-action-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 12h18M12 3v18"/>
+          </svg>
           <span>Mapa</span>
         </button>
         <button className="quick-action-btn" onClick={handleShowNextTransport}>
-          <span className="quick-action-icon">⏱️</span>
+          <svg className="quick-action-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+          </svg>
           <span>Siguiente</span>
         </button>
       </div>
