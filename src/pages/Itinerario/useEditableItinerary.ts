@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Destination, Reservation, FlightGroup, Flight } from './destinations/types';
 import { destinations as defaultDestinations, flights as defaultFlightsArray } from './destinations';
+import { wizzAirFlight, itaAirwaysFlight, vuelingFlight } from './destinations/flights';
 
 const STORAGE_KEY_DESTINATIONS = 'itinerario-destinations';
 const STORAGE_KEY_RESERVATIONS = 'itinerario-reservations';
@@ -8,13 +9,16 @@ const STORAGE_KEY_FLIGHT_GROUPS = 'itinerario-flight-groups';
 
 const defaultReservations: Reservation[] = [
   { id: 'vuelos', name: 'Vuelos KLM', status: 'confirmed', code: 'ZIFHKS' },
+  { id: 'vuelo-wizz', name: 'Wizz Air MAD→FCO', status: 'confirmed', code: 'KNKJVW' },
+  { id: 'tren-rom-sal', name: 'Italo Roma→Salerno', status: 'confirmed', code: 'WYI5VL' },
+  { id: 'tren-sal-flo', name: 'Italo Salerno→Florencia', status: 'confirmed', code: 'MC4T3P' },
+  { id: 'vuelo-ita', name: 'ITA Airways FLR→NCE', status: 'confirmed', code: '1122-428-852' },
+  { id: 'vuelo-niz-bcn', name: 'Vueling NCE→BCN', status: 'confirmed', code: '1123-116-110' },
+  { id: 'ave-bcn-mad', name: 'OUIGO Barcelona→Madrid', status: 'confirmed', code: 'AQ44HJ' },
   { id: 'uffizi', name: 'Uffizi Florencia', status: 'pending' },
   { id: 'accademia', name: "Galleria dell'Accademia", status: 'pending' },
   { id: 'sagrada', name: 'Sagrada Familia Barcelona', status: 'pending' },
-  { id: 'tren-sal-flo', name: 'Tren Salerno→Florencia', status: 'pending' },
-  { id: 'tren-flo-niz', name: 'Tren Florencia→Niza', status: 'pending' },
-  { id: 'vuelo-niz-bcn', name: 'Vuelo Niza→Barcelona', status: 'pending' },
-  { id: 'ave-bcn-mad', name: 'AVE Barcelona→Madrid', status: 'pending' },
+  { id: 'aloj-roma', name: 'Alojamiento Roma', status: 'pending' },
   { id: 'aloj-salerno', name: 'Alojamiento Salerno', status: 'pending' },
   { id: 'aloj-florencia', name: 'Alojamiento Florencia', status: 'pending' },
   { id: 'aloj-niza', name: 'Alojamiento Niza', status: 'pending' },
@@ -29,6 +33,27 @@ const defaultFlightGroups: FlightGroup[] = [
     airline: 'KLM',
     confirmationCode: 'ZIFHKS',
     flights: defaultFlightsArray,
+  },
+  {
+    id: 'wizz-mad-fco',
+    name: 'Wizz Air MAD→FCO',
+    airline: 'Wizz Air',
+    confirmationCode: 'KNKJVW',
+    flights: [wizzAirFlight],
+  },
+  {
+    id: 'ita-flr-nce',
+    name: 'ITA Airways FLR→NCE',
+    airline: 'ITA Airways',
+    confirmationCode: '1122-428-852',
+    flights: [itaAirwaysFlight],
+  },
+  {
+    id: 'vueling-nce-bcn',
+    name: 'Vueling NCE→BCN',
+    airline: 'Vueling',
+    confirmationCode: '1123-116-110',
+    flights: [vuelingFlight],
   },
 ];
 

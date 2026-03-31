@@ -106,3 +106,84 @@ export const flights: Flight[] = [
     isReturn: true,
   },
 ];
+
+export const wizzAirFlight: Flight = {
+  id: 'mad-fco',
+  flightNumber: 'W46012',
+  airline: 'Wizz Air',
+  confirmationCode: 'KNKJVW',
+  from: {
+    city: 'Madrid',
+    code: 'MAD',
+    coordinates: [40.4168, -3.7038],
+  },
+  to: {
+    city: 'Roma',
+    code: 'FCO',
+    coordinates: [41.8003, 12.2389],
+  },
+  departure: {
+    date: 'Vie 25 abr',
+    time: '9:25 AM',
+  },
+  arrival: {
+    date: 'Vie 25 abr',
+    time: '11:55 AM',
+  },
+  duration: '2h 30m',
+  isReturn: false,
+};
+
+export const itaAirwaysFlight: Flight = {
+  id: 'flr-nce',
+  flightNumber: 'ITA Airways',
+  airline: 'ITA Airways',
+  confirmationCode: '1122-428-852',
+  from: {
+    city: 'Florencia',
+    code: 'FLR',
+    coordinates: [43.8100, 11.2051],
+  },
+  to: {
+    city: 'Niza',
+    code: 'NCE',
+    coordinates: [43.6584, 7.2158],
+  },
+  departure: {
+    date: 'Sáb 2 may',
+    time: '3:30 PM',
+  },
+  arrival: {
+    date: 'Sáb 2 may',
+    time: '6:30 PM',
+  },
+  duration: '3h (1 cambio)',
+  isReturn: false,
+};
+
+export const vuelingFlight: Flight = {
+  id: 'nce-bcn',
+  flightNumber: 'Vueling',
+  airline: 'Vueling',
+  confirmationCode: '1123-116-110',
+  from: {
+    city: 'Niza',
+    code: 'NCE',
+    coordinates: [43.6584, 7.2158],
+  },
+  to: {
+    city: 'Barcelona',
+    code: 'BCN',
+    coordinates: [41.2974, 2.0833],
+  },
+  departure: {
+    date: 'Dom 4 may',
+    time: '7:50 AM',
+  },
+  arrival: {
+    date: 'Dom 4 may',
+    time: '9:10 AM',
+  },
+  duration: '1h 20m',
+  isReturn: false,
+};

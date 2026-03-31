@@ -6,8 +6,8 @@ export const nizaMonaco: Destination[] = [
     name: 'Niza',
     country: 'Francia',
     coordinates: [43.7102, 7.2620],
-    dates: '1-2 may',
-    nights: 2,
+    dates: '2-3 may',
+    nights: 1,
     history: `Niza fue fundada por los griegos en el siglo IV a.C. como Nikaia (victoria). Perteneció al Condado de Saboya y al Reino de Cerdeña antes de unirse a Francia en 1860 tras un referéndum.
 
 En el siglo XIX, aristócratas británicos y rusos la convirtieron en destino de invierno de la alta sociedad, creando la famosa Promenade des Anglais. La Riviera Francesa nació aquí, y artistas como Matisse, Chagall y Renoir encontraron inspiración en su luz mediterránea única.`,
@@ -64,27 +64,27 @@ En el siglo XIX, aristócratas británicos y rusos la convirtieron en destino de
     ],
     transports: [
       {
-        type: 'train',
-        from: 'Florencia',
-        to: 'Niza',
-        duration: '5-6h',
-        price: '€50-80',
-        link: 'https://www.trenitalia.com',
-        notes: 'Ruta panorámica por la costa. Cambio en Génova o Ventimiglia.',
+        type: 'flight',
+        from: 'Florencia (FLR)',
+        to: 'Niza (NCE)',
+        duration: '3h (1 cambio)',
+        price: '~€100-150',
+        link: 'https://www.ita-airways.com',
+        notes: 'ITA Airways. Pedido: 1122-428-852. Salida 15:30, llegada 18:30.',
       },
       {
         type: 'flight',
-        from: 'Niza',
-        to: 'Barcelona',
+        from: 'Niza (NCE)',
+        to: 'Barcelona (BCN)',
         duration: '1h 20min',
-        price: '€50-120',
+        price: '~€50-120',
         link: 'https://www.vueling.com',
-        notes: 'Vueling, easyJet o Ryanair. Aeropuerto muy cerca del centro.',
+        notes: 'Vueling. Pedido: 1123-116-110. Salida 07:50, llegada 09:10.',
       },
     ],
     activities: [
-      { date: '1 may', description: 'Llegada desde Florencia, Promenade, Vieux Nice, Colina del Castillo', isBase: true },
-      { date: '2 may', description: 'Excursión a Mónaco en tren' },
+      { date: '2 may', description: 'Llegada desde Florencia (18:30), Promenade des Anglais, Vieux Nice', isBase: true },
+      { date: '3 may', description: 'Excursión a Mónaco en tren' },
     ],
     tips: [
       'La French Riviera Pass (~€26) incluye transporte y algunas atracciones',
@@ -98,7 +98,7 @@ En el siglo XIX, aristócratas británicos y rusos la convirtieron en destino de
     name: 'Mónaco',
     country: 'Mónaco',
     coordinates: [43.7384, 7.4246],
-    dates: '2 may',
+    dates: '3 may',
     nights: 0,
     weather: { temp: '18°C', condition: 'sunny' },
     history: `Mónaco es el segundo país más pequeño del mundo (2 km²) y el más densamente poblado. Los Grimaldi gobiernan desde 1297, convirtiéndola en la monarquía reinante más antigua de Europa.
@@ -161,7 +161,7 @@ El Príncipe Carlos III salvó al principado de la bancarrota en 1863 abriendo e
       },
     ],
     activities: [
-      { date: '2 may', description: 'Tren desde Niza, Casino, Palacio, Museo Oceanográfico, regreso' },
+      { date: '3 may', description: 'Tren desde Niza, Casino, Palacio, Museo Oceanográfico, regreso' },
     ],
     tips: [
       'Mónaco es MUY caro - lleva snacks y agua',

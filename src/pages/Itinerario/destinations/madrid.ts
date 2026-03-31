@@ -6,7 +6,7 @@ export const madrid: Destination = {
   country: 'España',
   coordinates: [40.4168, -3.7038],
   dates: '5-7 may',
-  nights: 3,
+  nights: 2,
   weather: { temp: '22°C', condition: 'sunny' },
   history: `Madrid fue una pequeña fortaleza árabe (Mayrit) hasta que Felipe II la convirtió en capital de España en 1561. Desde entonces, ha sido el centro político y cultural del país.
 
@@ -83,26 +83,25 @@ El Siglo de Oro español (XVI-XVII) vio florecer a Velázquez, Cervantes y Lope 
   transports: [
     {
       type: 'train',
-      from: 'Barcelona',
-      to: 'Madrid',
-      duration: '2h 30min',
-      price: '€30-90',
-      link: 'https://www.renfe.com',
-      notes: 'AVE alta velocidad. Llega a Atocha. Reserva con antelación.',
+      from: 'Barcelona (Sants)',
+      to: 'Madrid (Atocha)',
+      duration: '3h 02min',
+      price: '€35',
+      link: 'https://www.ouigo.com',
+      notes: 'OUIGO 06570. Localizador: AQ44HJ. Salida 17:40, llegada 20:42.',
     },
     {
       type: 'flight',
-      from: 'Madrid',
-      to: 'Cartagena (vía conexión)',
-      duration: 'Variable',
-      price: 'Variable',
-      notes: 'Aeropuerto Barajas. Conexiones a Colombia vía varios hubs.',
+      from: 'Madrid (MAD)',
+      to: 'Ámsterdam (AMS)',
+      duration: '2h 25m',
+      notes: 'KLM KL1500. Salida 06:00. Conexión a Cartagena.',
     },
   ],
   activities: [
-    { date: '5 may', description: 'Llegada desde Barcelona, paseo centro, Plaza Mayor, Sol, La Latina', isBase: true },
+    { date: '5 may', description: 'Llegada desde Barcelona (20:42), paseo centro, Plaza Mayor, Sol, La Latina', isBase: true },
     { date: '6 may', description: 'Museo del Prado, Retiro, tiempo con familia' },
-    { date: '7 may', description: 'Mañana libre, salida al aeropuerto' },
+    { date: '7 may', description: 'Salida al aeropuerto, vuelo 06:00 a Ámsterdam' },
   ],
   tips: [
     'Madrid se come tarde: almuerzo 14:00-16:00, cena 21:00-23:00',

@@ -6,7 +6,7 @@ export const italiaSur: Destination[] = [
     name: 'Salerno',
     country: 'Italia',
     coordinates: [40.6824, 14.7681],
-    dates: '25-28 abr',
+    dates: '26-29 abr',
     nights: 4,
     history: `Salerno es una ciudad portuaria en la región de Campania, al sur de Italia. Fue capital del principado lombardo de Salerno en la Edad Media y albergó la famosa Escuela Médica Salernitana, considerada la primera universidad de medicina de Europa.
 
@@ -52,19 +52,19 @@ Durante la Segunda Guerra Mundial, Salerno fue escenario del desembarco aliado e
     transports: [
       {
         type: 'train',
-        from: 'Nápoles',
+        from: 'Roma Tiburtina',
         to: 'Salerno',
-        duration: '35-45 min',
-        price: '€5-15',
-        link: 'https://www.trenitalia.com',
-        notes: 'Trenes frecuentes desde Napoli Centrale. Frecciarossa o regionales.',
+        duration: '2h 20min',
+        price: '€39.80',
+        link: 'https://www.italotreno.it',
+        notes: 'Italo 9947. Código: WYI5VL. Salida 19:12, llegada 21:32.',
       },
     ],
     activities: [
-      { date: '25 abr', description: 'Llegada desde Nápoles, instalarse, paseo por Lungomare', isBase: true },
-      { date: '26 abr', description: 'Excursión a Positano y Amalfi en ferry' },
-      { date: '27 abr', description: 'Excursión a Ravello y Amalfi' },
-      { date: '28 abr', description: 'Excursión a Capri en ferry' },
+      { date: '26 abr', description: 'Día en Roma, tren Italo 9947 a Salerno (19:12→21:32), instalarse', isBase: true },
+      { date: '27 abr', description: 'Excursión a Amalfi y Ravello' },
+      { date: '28 abr', description: 'Excursión a Positano' },
+      { date: '29 abr', description: 'Excursión a Capri en ferry' },
     ],
     tips: [
       'Los ferries a la Costa Amalfitana salen del Molo Manfredi',
@@ -77,7 +77,7 @@ Durante la Segunda Guerra Mundial, Salerno fue escenario del desembarco aliado e
     name: 'Positano',
     country: 'Italia',
     coordinates: [40.6281, 14.4850],
-    dates: '26 abr',
+    dates: '28 abr',
     nights: 0,
     weather: { temp: '20°C', condition: 'sunny' },
     history: `Positano fue un próspero puerto marítimo durante los siglos XVI y XVII, pero decayó cuando la navegación a vela fue reemplazada por barcos de vapor. En el siglo XX, artistas e intelectuales lo redescubrieron, y John Steinbeck escribió su famoso ensayo "Positano" en 1953, poniéndolo en el mapa del turismo internacional.
@@ -127,7 +127,7 @@ Las casas de colores pastel que se derraman por el acantilado hacia el mar se ha
       },
     ],
     activities: [
-      { date: '26 abr', description: 'Ferry desde Salerno, explorar pueblo, playa, continuar a Amalfi' },
+      { date: '28 abr', description: 'Ferry desde Salerno, explorar pueblo, playa, regreso a Salerno' },
     ],
     tips: [
       'El pueblo tiene MUCHAS escaleras - lleva calzado cómodo',
@@ -140,7 +140,7 @@ Las casas de colores pastel que se derraman por el acantilado hacia el mar se ha
     name: 'Amalfi',
     country: 'Italia',
     coordinates: [40.6340, 14.6027],
-    dates: '26-27 abr',
+    dates: '27 abr',
     nights: 0,
     history: `Amalfi fue una de las cuatro Repúblicas Marítimas de Italia medieval, junto con Génova, Pisa y Venecia. En su apogeo (siglos X-XI), su flota comerciaba por todo el Mediterráneo y creó las Tablas Amalfitanas, el primer código de derecho marítimo.
 
@@ -197,8 +197,7 @@ La república cayó tras ser saqueada por Pisa en 1137 y un devastador tsunami e
       },
     ],
     activities: [
-      { date: '26 abr', description: 'Visita después de Positano, Duomo, paseo' },
-      { date: '27 abr', description: 'Regreso desde Ravello, más tiempo para explorar' },
+      { date: '27 abr', description: 'Excursión desde Salerno con Ravello, Duomo, paseo' },
     ],
     tips: [
       'Prueba el limoncello local - los limones de Amalfi son famosos',
@@ -259,7 +258,7 @@ Gore Vidal vivió aquí 30 años. El pueblo, encaramado 350 metros sobre el mar,
       },
     ],
     activities: [
-      { date: '27 abr', description: 'Mañana en Ravello: Villa Rufolo, Villa Cimbrone, pueblo' },
+      { date: '27 abr', description: 'Excursión desde Salerno: Villa Rufolo, Villa Cimbrone, pueblo' },
     ],
     tips: [
       'Llega temprano para evitar multitudes',
@@ -272,7 +271,7 @@ Gore Vidal vivió aquí 30 años. El pueblo, encaramado 350 metros sobre el mar,
     name: 'Capri',
     country: 'Italia',
     coordinates: [40.5508, 14.2225],
-    dates: '28 abr',
+    dates: '29 abr',
     nights: 0,
     history: `Capri ha sido refugio de emperadores, artistas y celebridades durante milenios. El emperador Tiberio gobernó Roma desde aquí (27-37 d.C.) y construyó 12 villas, incluyendo Villa Jovis.
 
@@ -333,7 +332,7 @@ En el siglo XIX, escritores como Oscar Wilde, Graham Greene y Pablo Neruda encon
       },
     ],
     activities: [
-      { date: '28 abr', description: 'Ferry desde Salerno, Grotta Azzurra, Piazzetta, Faraglioni, regreso' },
+      { date: '29 abr', description: 'Ferry desde Salerno, Grotta Azzurra, Piazzetta, Faraglioni, regreso' },
     ],
     tips: [
       'La Grotta Azzurra cierra con mal tiempo - ten plan B',
