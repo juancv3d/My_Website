@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Triple-S Snow Day · Cortex Code Hands-on Labs</title>
+  <meta name="description" content="Two 90-minute Snowflake notebook labs for Triple-S: build a ghost-provider agent and an AI pipeline for Medicare appeals with Cortex Code.">
+  <meta property="og:title" content="Triple-S Snow Day · Cortex Code Hands-on Labs">
+  <meta property="og:description" content="Download the labs, prerequisites and step-by-step instructions.">
+  <meta property="og:url" content="https://juancamilo.dev/triple-s-lab/">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="/favicon.svg">
+  <style>
+    :root {
+      color-scheme: light dark;
+      --sf-blue: #29B5E8;
+      --sf-mid: #11567F;
+      --sf-dark: #102E46;
+      --sf-star: #75CDD7;
+      --sf-orange: #FF9F36;
+      --sf-purple: #7254A3;
+      --bg: light-dark(#F7FAFC, #0B1A28);
+      --surface: light-dark(#FFFFFF, #12263A);
+      --surface-2: light-dark(#EEF6FB, #183049);
+      --text: light-dark(#1B2A3A, #E6EEF5);
+      --muted: light-dark(#5A6B7B, #9DB0C2);
+      --border: light-dark(#DCE6EE, #24405C);
+      --code-bg: light-dark(#F1F5F9, #0A1622);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+           background: var(--bg); color: var(--text); line-height: 1.6; font-size: 16px; }
+    img, svg { max-width: 100%; height: auto; }
+    a { color: light-dark(var(--sf-mid), var(--sf-star)); }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .88em; background: var(--code-bg);
+           padding: 1px 6px; border-radius: 4px; }
+    pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; overflow-x: auto;
+          font-size: .85rem; line-height: 1.5; margin: 12px 0; white-space: pre-wrap; }
+    .wrap { max-width: 1100px; width: 100%; margin: 0 auto; padding: 0 clamp(16px, 4vw, 32px); }
+
+    /* Header / hero */
+    .hero { background: linear-gradient(135deg, var(--sf-dark) 0%, var(--sf-mid) 60%, #1A7FB0 100%); color: #fff; padding: 22px 0 56px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .logos { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .logos .sf { height: 34px; width: auto; }
+    .logos .sep { opacity: .5; font-size: 1.6rem; font-weight: 200; }
+    .logos .client { background: #fff; border-radius: 8px; padding: 6px 12px; display: inline-flex; }
+    .logos .client img { height: 26px; width: auto; }
+    .topnav { display: flex; gap: 18px; flex-wrap: wrap; font-size: .92rem; }
+    .topnav a { color: #fff; opacity: .85; text-decoration: none; }
+    .topnav a:hover { opacity: 1; text-decoration: underline; }
+    .hero h1 { font-size: clamp(2rem, 5vw, 3.1rem); line-height: 1.1; margin: 46px 0 12px; letter-spacing: -.02em; }
+    .hero h1 span { color: var(--sf-blue); }
+    .hero .lead { font-size: clamp(1.02rem, 2vw, 1.2rem); max-width: 760px; opacity: .92; margin: 0 0 22px; }
+    .meta { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 28px; }
+    .pill { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.25); padding: 5px 12px; border-radius: 999px; font-size: .88rem; }
+    .btns { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 18px; border-radius: 8px; font-weight: 600; text-decoration: none;
+           font-size: .95rem; border: 2px solid transparent; transition: transform .1s, background .15s; }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary { background: var(--sf-blue); color: #fff; }
+    .btn-primary:hover { background: #1fa3d4; }
+    .btn-ghost { border-color: rgba(255,255,255,.6); color: #fff; }
+    .btn-ghost:hover { background: rgba(255,255,255,.1); }
+    .btn-dark { background: light-dark(var(--sf-dark), var(--sf-blue)); color: #fff; }
+
+    /* Sections */
+    section { padding: 56px 0 8px; }
+    h2 { font-size: clamp(1.5rem, 3vw, 2rem); margin: 0 0 8px; letter-spacing: -.01em; }
+    h2 .num { color: var(--sf-blue); margin-right: 8px; }
+    h3 { font-size: 1.2rem; margin: 28px 0 10px; }
+    h4 { margin: 0 0 6px; font-size: 1rem; }
+    .sub { color: var(--muted); margin: 0 0 24px; max-width: 780px; }
+    .grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .grid-2 { display: grid; gap: 22px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
+    .card.accent { border-top: 4px solid var(--sf-blue); }
+    .card.accent-2 { border-top: 4px solid var(--sf-orange); }
+    .tag { display: inline-block; font-size: .75rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+           padding: 3px 9px; border-radius: 999px; background: light-dark(#E3F5FC, #12405E); color: light-dark(var(--sf-mid), var(--sf-star)); }
+    .tag.orange { background: light-dark(#FFF1E0, #4A3214); color: light-dark(#A35A00, var(--sf-orange)); }
+    .kpi { font-size: 2rem; font-weight: 800; color: var(--sf-blue); line-height: 1.1; }
+    .kpi small { display: block; font-size: .85rem; font-weight: 500; color: var(--muted); margin-top: 4px; }
+    ul.clean { padding-left: 20px; margin: 8px 0; }
+    ul.clean li { margin: 4px 0; }
+    ul.check { list-style: none; padding: 0; margin: 8px 0; }
+    ul.check li { padding-left: 28px; position: relative; margin: 8px 0; }
+    ul.check li::before { content: "✓"; position: absolute; left: 0; top: 0; width: 20px; height: 20px; border-radius: 50%;
+                          background: var(--sf-blue); color: #fff; font-size: .75rem; display: grid; place-items: center; font-weight: 700; }
+
+    /* Agenda */
+    .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+    table { border-collapse: collapse; width: 100%; font-size: .93rem; }
+    th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { background: var(--surface-2); font-weight: 700; white-space: nowrap; }
+    tr:last-child td { border-bottom: 0; }
+    td.t { white-space: nowrap; font-weight: 700; color: light-dark(var(--sf-mid), var(--sf-star)); }
+
+    /* Lab detail */
+    .lab-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; flex-wrap: wrap; }
+    .problem { background: light-dark(#FFF8EF, #2A2114); border-left: 4px solid var(--sf-orange); border-radius: 10px; padding: 18px 20px; margin: 18px 0; }
+    .aha { background: light-dark(#EAF7FD, #0F3550); border-left: 4px solid var(--sf-blue); border-radius: 10px; padding: 18px 20px; margin: 18px 0; }
+    .aha strong:first-child, .problem strong:first-child { display: block; margin-bottom: 4px; }
+    .flow { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; margin: 14px 0; }
+    .flow .step { flex: 1 1 150px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; font-size: .9rem; }
+    .flow .step b { display: block; color: light-dark(var(--sf-mid), var(--sf-star)); }
+    .flow .arrow { align-self: center; color: var(--sf-blue); font-weight: 800; }
+    ol.steps { counter-reset: s; list-style: none; padding: 0; margin: 12px 0; }
+    ol.steps > li { counter-increment: s; position: relative; padding: 0 0 18px 52px; }
+    ol.steps > li::before { content: counter(s); position: absolute; left: 0; top: -2px; width: 34px; height: 34px; border-radius: 50%;
+                            background: var(--sf-blue); color: #fff; font-weight: 800; display: grid; place-items: center; }
+    ol.steps > li:not(:last-child)::after { content: ""; position: absolute; left: 16px; top: 34px; bottom: 0; width: 2px; background: var(--border); }
+    .prompt { background: var(--code-bg); border: 1px dashed var(--sf-blue); border-radius: 10px; padding: 12px 14px; font-family: ui-monospace, Menlo, monospace;
+              font-size: .85rem; margin: 10px 0; white-space: pre-wrap; }
+    .prompt::before { content: "Cortex Code prompt"; display: block; font-family: -apple-system, system-ui, sans-serif; font-size: .72rem;
+                      font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--sf-blue); margin-bottom: 6px; }
+    .note { font-size: .9rem; color: var(--muted); }
+    .warn { background: light-dark(#FFF4E5, #33240F); border: 1px solid light-dark(#FFD7A3, #5C4013); border-radius: 10px; padding: 14px 16px; margin: 12px 0; font-size: .93rem; }
+    details { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; margin: 10px 0; }
+    details summary { cursor: pointer; font-weight: 700; }
+    details[open] summary { margin-bottom: 8px; }
+    .dl-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+    .btn-outline { border-color: var(--sf-blue); color: light-dark(var(--sf-mid), var(--sf-star)); background: transparent; }
+
+    footer { margin-top: 64px; background: var(--sf-dark); color: #CFE3F1; padding: 30px 0; font-size: .9rem; }
+    footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: center; }
+    footer a { color: #fff; }
+    @media (max-width: 560px) { .topnav { display: none; } .hero h1 { margin-top: 30px; } }
+  </style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="topbar">
+      <div class="logos">
+        <img class="sf" src="snowflake_logo_white.png" alt="Snowflake">
+        <span class="sep">|</span>
+        <span class="client"><img src="triple-s-logo.png" alt="Triple-S"></span>
+      </div>
+      <nav class="topnav" aria-label="Sections">
+        <a href="#agenda">Agenda</a>
+        <a href="#before">Before you start</a>
+        <a href="#lab1">Lab 1</a>
+        <a href="#lab2">Lab 2</a>
+        <a href="#faq">Troubleshooting</a>
+      </nav>
+    </div>
+
+    <h1>Snow Day: <span>Cortex Code</span><br>Hands-on Labs</h1>
+    <p class="lead">Two 90-minute labs where you use Cortex Code, the AI assistant built into Snowflake, to solve two real Triple-S problems: inaccurate provider directories and Medicare appeals that need to be protected, classified and measured.</p>
+    <div class="meta">
+      <span class="pill">November 17, 2026</span>
+      <span class="pill">8:30 AM – 1:00 PM</span>
+      <span class="pill">2 labs · 90 min each</span>
+      <span class="pill">100% synthetic data</span>
+    </div>
+    <div class="btns">
+      <a class="btn btn-primary" href="files/Lab1_Ghost_Providers_Agent.ipynb" download>Download Lab 1 (.ipynb)</a>
+      <a class="btn btn-primary" href="files/Lab2_Medicare_Appeals_AI_Pipeline.ipynb" download>Download Lab 2 (.ipynb)</a>
+      <a class="btn btn-ghost" href="https://github.com/juancv3d/triple-s-snowday-labs">View on GitHub</a>
+      <a class="btn btn-ghost" href="https://github.com/juancv3d/triple-s-snowday-labs/archive/refs/heads/main.zip">Download all (.zip)</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- Overview -->
+  <section id="overview">
+    <h2><span class="num">01</span>Pick your lab</h2>
+    <p class="sub">Both labs run in a Snowflake notebook and use synthetic data shaped like Triple-S data. The goal is the same in both: learn how to work <em>with</em> Cortex Code to get more done, faster.</p>
+    <div class="grid-2">
+      <div class="card accent">
+        <span class="tag">Lab 1 · Business track</span>
+        <h3>Ghost Providers: build a directory agent</h3>
+        <p>Find the providers that are published in the member directory but are no longer active, define "active provider" as a business rule, and give your team an agent they can ask in Spanish.</p>
+        <ul class="clean">
+          <li><b>For:</b> Network Management, Member Services, Compliance, Data Governance, Business &amp; Systems Analysts</li>
+          <li><b>SQL needed:</b> none</li>
+          <li><b>You build:</b> semantic view, Cortex Agent, cleanup worklist</li>
+        </ul>
+        <a class="btn btn-dark" href="#lab1">Lab 1 instructions →</a>
+      </div>
+      <div class="card accent-2">
+        <span class="tag orange">Lab 2 · Technical track</span>
+        <h3>Protect, classify and enrich Medicare appeals</h3>
+        <p>Remove PHI from free text, classify appeal reasons with AI, measure where the IRE overturns Triple-S, and run AI incrementally so it stays affordable at scale.</p>
+        <ul class="clean">
+          <li><b>For:</b> Data Engineers, BI, IT Developers, Healthcare Analysts who write SQL</li>
+          <li><b>SQL needed:</b> yes, intermediate</li>
+          <li><b>You build:</b> BRONZE → SILVER → ENRICHED (Dynamic Table) → GOLD</li>
+        </ul>
+        <a class="btn btn-dark" href="#lab2">Lab 2 instructions →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Agenda -->
+  <section id="agenda">
+    <h2><span class="num">02</span>Agenda</h2>
+    <p class="sub">The two labs run in parallel, in separate rooms.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Time</th><th>Block</th><th>Details</th></tr></thead>
+        <tbody>
+          <tr><td class="t">8:30 – 9:00</td><td>Welcome</td><td>The Triple-S problems we will solve today, and what Cortex Code is</td></tr>
+          <tr><td class="t">9:00 – 9:30</td><td>Cortex Code warm-up (everyone)</td><td>Log in, open Cortex Code, first prompt, the 5 habits</td></tr>
+          <tr><td class="t">9:30 – 9:45</td><td>Break</td><td>Move to your lab room</td></tr>
+          <tr><td class="t">9:45 – 11:15</td><td><b>Lab 1</b> and <b>Lab 2</b> in parallel</td><td>90 minutes, hands-on</td></tr>
+          <tr><td class="t">11:15 – 11:30</td><td>Break</td><td></td></tr>
+          <tr><td class="t">11:30 – 12:20</td><td>Bring your own use case</td><td>Use Cortex Code on a problem from your own team, with Snowflake SEs</td></tr>
+          <tr><td class="t">12:20 – 12:50</td><td>Share-out</td><td>Lab 1 presents its ghost-provider count; Lab 2 presents IRE overturn rates</td></tr>
+          <tr><td class="t">12:50 – 1:00</td><td>Close and next steps</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Before you start -->
+  <section id="before">
+    <h2><span class="num">03</span>Before you start</h2>
+    <p class="sub">Check these before the lab begins. If something is missing, tell a Snowflake SE in the room.</p>
+    <div class="grid">
+      <div class="card">
+        <h4>Your access</h4>
+        <ul class="check">
+          <li>You can log in to Snowsight</li>
+          <li>Your default role is the lab role your admin created (for example <code>TSS_SNOWDAY_LAB_ROLE</code>)</li>
+          <li>You can use the lab warehouse <code>TSS_SNOWDAY_WH</code> and the notebook compute pool</li>
+          <li>You see the <b>Cortex Code</b> icon in the lower-right corner of Snowsight</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>What you need to know</h4>
+        <ul class="check">
+          <li><b>All data is synthetic.</b> No real member or provider data is used.</li>
+          <li>Each lab creates its own schema for you: <code>TSS_SNOWDAY.LAB1_&lt;USER&gt;</code> or <code>LAB2_&lt;USER&gt;</code></li>
+          <li>Setup cells are safe to re-run</li>
+          <li>AI cells take 1 to 3 minutes. They are not stuck.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>How the notebooks work</h4>
+        <ul class="check">
+          <li>Every section has a <b>Cortex Code prompt</b>: paste it into Cortex Code first</li>
+          <li>Then a <b>reference cell</b> with the answer, so you can always catch up</li>
+          <li>Read what Cortex Code proposes <b>before</b> you approve it</li>
+          <li>The last cell (teardown) is commented out on purpose</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>How to open a lab in Snowflake</h3>
+    <ol class="steps">
+      <li><b>Download</b> the notebook for your lab from this page, or from <a href="https://github.com/juancv3d/triple-s-snowday-labs">GitHub</a>.</li>
+      <li>In Snowsight, go to <b>Projects » Workspaces</b>. Select <b>+ Add New → Upload Files</b> and choose the <code>.ipynb</code> file. <span class="note">(Alternative: <b>From Git repository</b> with the GitHub URL.)</span></li>
+      <li>Open the notebook and <b>connect it</b>: choose the compute pool your admin gave you and the query warehouse <code>TSS_SNOWDAY_WH</code>.</li>
+      <li>Run the first two code cells (<code>setup_session</code> and <code>load_data</code> / <code>load_bronze</code>). You should see <i>"Your lab schema: TSS_SNOWDAY.LAB…"</i> and the row counts.</li>
+      <li>Open <b>Cortex Code</b> (lower-right icon) next to the notebook and start Section 1.</li>
+    </ol>
+
+    <h3>The 5 habits of a productive Cortex Code user</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Habit</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td class="t">1</td><td><b>Give context</b>: tables, your role, the goal</td><td><i>"I'm on the Network team. Using the tables in my LAB1 schema, help me find providers that should not be in the directory."</i></td></tr>
+          <tr><td class="t">2</td><td><b>Ask for a plan before code</b></td><td><i>"Before creating anything, show me your plan."</i></td></tr>
+          <tr><td class="t">3</td><td><b>State business rules, not SQL</b></td><td><i>"A provider is active only if the contract is in force today AND credentialing is valid."</i></td></tr>
+          <tr><td class="t">4</td><td><b>Ask it to explain</b></td><td><i>"Explain this query as if I were not technical."</i></td></tr>
+          <tr><td class="t">5</td><td><b>Verify and iterate</b></td><td><i>"That number looks low. Check contracts that say ACTIVE but already ended."</i></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- LAB 1 -->
+  <section id="lab1">
+    <div class="lab-head">
+      <div>
+        <span class="tag">Lab 1 · Business track · 90 min</span>
+        <h2 style="margin-top:10px">Ghost Providers: Build a Directory Agent with Cortex Code</h2>
+      </div>
+      <a class="btn btn-primary" href="files/Lab1_Ghost_Providers_Agent.ipynb" download>Download Lab 1</a>
+    </div>
+
+    <h3>Context: the business case</h3>
+    <p>Triple-S publishes a <b>provider directory</b> that members use to find a doctor. Every record has a <code>publish</code> flag. Over time, providers leave the network: their contract ends, their credentialing expires, or a new contract has been loaded but hasn't started. In many of those cases nobody turns the publish flag off.</p>
+    <div class="problem">
+      <strong>The problem we are solving</strong>
+      Members call providers listed in the directory and are turned away. That creates <b>complaints and grievances</b>, delays care, triggers <b>appeals</b>, and exposes Triple-S in <b>CMS audits of Medicare Advantage directory accuracy</b>. Today, finding these "ghost providers" means opening a ticket with IT and waiting.
+    </div>
+    <div class="grid">
+      <div class="card"><div class="kpi">3 systems<small>Directory, contracting and credentialing each hold part of the truth</small></div></div>
+      <div class="card"><div class="kpi">0 columns<small>No field says "active". It is a business rule across several fields and a date window.</small></div></div>
+      <div class="card"><div class="kpi">Same day<small>Goal: the real ghost-provider count and a cleanup list, without an IT ticket</small></div></div>
+    </div>
+
+    <h3>What you will build</h3>
+    <div class="flow">
+      <div class="step"><b>Explore</b>Ask Cortex Code to explain 4 tables you've never seen</div><span class="arrow">→</span>
+      <div class="step"><b>Define</b>Write "active provider" as a business rule</div><span class="arrow">→</span>
+      <div class="step"><b>Model</b>Semantic view with the governed definition</div><span class="arrow">→</span>
+      <div class="step"><b>Agent</b>Cortex Agent in CoWork, answering in Spanish</div><span class="arrow">→</span>
+      <div class="step"><b>Act</b>Cleanup worklist ranked by member complaints</div>
+    </div>
+    <div class="aha">
+      <strong>The "aha" moment</strong>
+      The obvious answer ("published + contract TERMINATED") finds only about <b>one in three</b> ghost providers. The largest hidden group are contracts that still say <code>ACTIVE</code> but whose end date has already passed. Then a question to the semantic view returns the wrong number even though the SQL runs fine. The lesson: <b>fix the semantic view, not the prompt.</b>
+    </div>
+
+    <h3>Lab sections</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Min</th><th>Section</th><th>What you do</th><th>Cortex Code skill</th></tr></thead>
+        <tbody>
+          <tr><td class="t">0–10</td><td>0. Setup + primer</td><td>Create your schema, load 2,000 synthetic providers</td><td>Open Cortex Code, the 5 habits</td></tr>
+          <tr><td class="t">10–25</td><td>1. Explore the data</td><td>Understand PROVIDERS, CONTRACTS, CREDENTIALS, COMPLAINTS</td><td>Ask it to explain tables</td></tr>
+          <tr><td class="t">25–35</td><td>2. Profile for problems</td><td>Published vs. contract status</td><td>Ask it to find inconsistencies</td></tr>
+          <tr><td class="t">35–50</td><td>3. Define "active provider"</td><td>Naive count vs. business-rule count</td><td>Give business rules, not SQL</td></tr>
+          <tr><td class="t">50–65</td><td>4. Semantic view + deliberate failure</td><td>v1 gives a wrong answer; you fix it in v2</td><td>Ask for a plan, review, iterate</td></tr>
+          <tr><td class="t">65–80</td><td>5. Build the agent</td><td>Create the agent, publish it to CoWork, test it</td><td>Let Cortex Code build and test</td></tr>
+          <tr><td class="t">80–90</td><td>6. Outcome</td><td>Worklist + chart by municipality</td><td>Turn answers into actions</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Step-by-step</h3>
+    <ol class="steps">
+      <li><b>Setup.</b> Run <code>setup_session</code> and <code>load_data</code>. You should see 2,000 providers, contracts and credentials.</li>
+      <li><b>Explore.</b> Paste this into Cortex Code:
+        <div class="prompt">I'm a business analyst on the Triple-S Network team. Look at the tables in my schema TSS_SNOWDAY.LAB1_&lt;MY_USER&gt;. For each table, explain in plain English what it represents, what one row means, and how the tables connect to each other.</div></li>
+      <li><b>Define the business rule.</b> Tell Cortex Code what "active" means:
+        <div class="prompt">A provider is ACTIVE only if: contract status is ACTIVE, effective date &lt;= today, termination date is empty or &gt;= today, and the credential is ACTIVE and not expired. A GHOST provider is published but NOT active. Count ghost providers by reason and compare with the naive count.</div></li>
+      <li><b>Watch it fail, then fix the model.</b> Run the v1 semantic view and ask the question. Write down the wrong number. Then ask Cortex Code to update the semantic view with the business definition (section 4.3) and ask the <b>same</b> question again.</li>
+      <li><b>Create the agent and publish it to CoWork.</b> Run sections 5 and 5.1. The notebook adds your agent to CoWork if your account needs it.</li>
+      <li><b>Test in CoWork</b> (<a href="https://ai.snowflake.com">ai.snowflake.com</a>), open <i>Triple-S Directory Accuracy Assistant</i> and ask:
+        <ul class="clean">
+          <li><i>¿Cuántos proveedores fantasma tenemos?</i></li>
+          <li><i>Cardiología en Bayamón: ¿hay proveedores fantasma?</i></li>
+          <li><i>¿Qué contratos vencen el próximo trimestre?</i></li>
+        </ul>
+        Expand the reasoning to see the SQL it generated and check that it uses <code>is_ghost_provider</code>.</li>
+      <li><b>Act.</b> Create the cleanup worklist and see what share of complaints come from ghost providers.</li>
+    </ol>
+
+    <h3>Keep in mind</h3>
+    <ul class="clean">
+      <li><b>"Contrato terminado" is a business decision.</b> When we tested it, the agent counted both <code>TERMINATED</code> contracts and <code>ACTIVE</code> contracts with a past end date. Discuss with your team which one is right.</li>
+      <li><b>"Next quarter"</b> is read as the next 90 days; the agent says so in its answer. Ask for the calendar quarter if that's what you need.</li>
+      <li>Answers in CoWork take 10 to 30 seconds. The agent queries the data each time.</li>
+    </ul>
+  </section>
+
+  <!-- LAB 2 -->
+  <section id="lab2">
+    <div class="lab-head">
+      <div>
+        <span class="tag orange">Lab 2 · Technical track · 90 min</span>
+        <h2 style="margin-top:10px">Protect, Classify and Enrich Medicare Appeals with Cortex Code</h2>
+      </div>
+      <a class="btn btn-primary" href="files/Lab2_Medicare_Appeals_AI_Pipeline.ipynb" download>Download Lab 2</a>
+    </div>
+
+    <h3>Context: the business case</h3>
+    <p>When Triple-S denies a Medicare Advantage service, the member can appeal. CMS sets strict deadlines: <b>72 hours</b> for expedited appeals and 30 days for standard pre-service appeals. If the plan <b>upholds</b> the denial or <b>misses the deadline</b>, the case goes automatically to the <b>Independent Review Entity (IRE)</b>. When the IRE overturns the plan, that is a signal of systematic incorrect denials. It also affects Star Ratings and audits.</p>
+    <div class="problem">
+      <strong>The problem we are solving</strong>
+      Triple-S already stores plan and IRE decisions, but <b>nobody measures the IRE overturn rate by appeal reason</b>, because the reason is only in <b>free text</b>. That text contains <b>PHI</b> (names, dates of birth, Medicare IDs, phone numbers), so analysts can't use it until it's protected. And the categories people enter by hand are sometimes wrong.
+    </div>
+    <div class="grid">
+      <div class="card"><div class="kpi">72 h<small>Regulatory deadline for expedited appeals</small></div></div>
+      <div class="card"><div class="kpi">4 AI functions<small>AI_REDACT, AI_CLASSIFY, AI_FILTER and AI_EXTRACT on every appeal</small></div></div>
+      <div class="card"><div class="kpi">~94% less<small>AI work on each refresh with incremental processing (measured in the lab)</small></div></div>
+    </div>
+
+    <h3>What you will build</h3>
+    <div class="flow">
+      <div class="step"><b>BRONZE</b>Raw appeals with PHI + masking policies</div><span class="arrow">→</span>
+      <div class="step"><b>SILVER</b>AI_REDACT + regex safety net, loaded incrementally</div><span class="arrow">→</span>
+      <div class="step"><b>ENRICHED</b>Incremental Dynamic Table: classify, filter, extract</div><span class="arrow">→</span>
+      <div class="step"><b>GOLD</b>SLA status and IRE overturn rate by category</div>
+    </div>
+    <div class="aha">
+      <strong>The "aha" moments</strong>
+      <b>1. Validate every AI step.</b> AI_REDACT removes names, dates of birth and phone numbers, but it <b>does not detect the Medicare ID (MBI)</b>. Without the leak report you would have shared Medicare IDs with every analyst.<br>
+      <b>2. Weak denials get overturned.</b> Denials with a generic rationale (<i>"Denied per plan policy."</i>) are overturned by the IRE about <b>4x</b> more often than specific ones.<br>
+      <b>3. Incremental AI.</b> New appeals go through AI once. History is never reprocessed.
+    </div>
+
+    <h3>Lab sections</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Min</th><th>Section</th><th>What you do</th><th>Cortex Code skill</th></tr></thead>
+        <tbody>
+          <tr><td class="t">0–8</td><td>0. Setup + primer</td><td>Load 300 synthetic appeals + a batch of 20 new ones</td><td>Context-rich prompts</td></tr>
+          <tr><td class="t">8–15</td><td>1. Explore + estimate cost</td><td>Find the PHI, count tokens with AI_COUNT_TOKENS</td><td>Ask before you spend</td></tr>
+          <tr><td class="t">15–30</td><td>2. Protect PHI</td><td>Masking policies, AI_REDACT prototype, leak report, regex fix</td><td>Prototype small, then validate</td></tr>
+          <tr><td class="t">30–45</td><td>3. Classify and enrich</td><td>AI_CLASSIFY, AI_FILTER, AI_EXTRACT; Dynamic Table</td><td>Iterate on prompts and labels</td></tr>
+          <tr><td class="t">45–55</td><td>4. Validate AI vs. humans</td><td>Agreement rate, confusion matrix, disagreements</td><td>Ask it to audit the results</td></tr>
+          <tr><td class="t">55–72</td><td>5. Incremental AI</td><td>Insert 20 appeals, refresh, read the refresh history</td><td>Ask it to explain refresh behavior</td></tr>
+          <tr><td class="t">72–87</td><td>6. GOLD metrics</td><td>SLA view, at-risk queue, overturn chart</td><td>Ask for metrics and a chart</td></tr>
+          <tr><td class="t">87–90</td><td>Wrap-up</td><td>Take-home challenges</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Step-by-step</h3>
+    <ol class="steps">
+      <li><b>Setup.</b> Run <code>setup_session</code> and <code>load_bronze</code>: 300 appeals in <code>BRONZE_APPEALS</code> and 20 in <code>BRONZE_APPEALS_NEW_BATCH</code>.</li>
+      <li><b>Estimate before you spend.</b>
+        <div class="prompt">Before I run AI_REDACT and AI_CLASSIFY on APPEAL_REASON_TEXT, estimate how many tokens that would consume for the whole table using AI_COUNT_TOKENS.</div></li>
+      <li><b>Protect.</b> Apply the masking policies, prototype AI_REDACT on 5 rows, build SILVER and <b>read the leak report</b>. Then ask Cortex Code to add the regex safety net and confirm every leak counter is 0.</li>
+      <li><b>Classify.</b> Prototype on 10 rows, then build the incremental Dynamic Table <code>ENRICHED_APPEALS</code>.
+        <div class="prompt">Turn the prototype into an incremental Dynamic Table ENRICHED_APPEALS on top of SILVER_APPEALS. Keep the AI functions in the SELECT clause so it stays incremental.</div></li>
+      <li><b>Validate.</b> Compare <code>AI_CATEGORY</code> with <code>HUMAN_CATEGORY</code>. Read the disagreements and decide who is right.</li>
+      <li><b>Go incremental.</b> Insert the 20 new appeals, load them into SILVER, refresh ENRICHED and check that <code>ROWS_INSERTED = 20</code> and <code>REFRESH_ACTION = INCREMENTAL</code>.</li>
+      <li><b>GOLD.</b> Create the SLA and overturn views, look at today's at-risk queue and the overturn chart.</li>
+    </ol>
+
+    <h3>Keep in mind</h3>
+    <ul class="clean">
+      <li><b>AI_REDACT does not catch the MBI.</b> This is expected, and it is the lesson of section 2. Don't skip the leak report.</li>
+      <li><b>SILVER is a regular table, not a Dynamic Table.</b> In our tests AI_REDACT failed on incremental Dynamic Table refreshes, while the other AI functions worked. The notebook explains the design.</li>
+      <li><b>AI functions go in the <code>SELECT</code> clause</b> of a Dynamic Table to keep it incremental. Time-based logic (<code>CURRENT_TIMESTAMP</code>) lives in the GOLD views.</li>
+      <li>Building SILVER and ENRICHED takes 1 to 3 minutes each, because they run AI on 300 appeals.</li>
+      <li>In our run the AI agreed with the human label about <b>79%</b> of the time. Section 4.1 has a prompt to improve it.</li>
+    </ul>
+  </section>
+
+  <!-- Admin -->
+  <section id="admin">
+    <h2><span class="num">04</span>For Snowflake admins</h2>
+    <p class="sub">Run once, as <code>ACCOUNTADMIN</code>, before the event. The full script is in the repo.</p>
+    <div class="grid-2">
+      <div class="card">
+        <h4>What the setup script creates</h4>
+        <ul class="check">
+          <li>Role <code>TSS_SNOWDAY_LAB_ROLE</code>, database <code>TSS_SNOWDAY</code>, warehouse <code>TSS_SNOWDAY_WH</code> (XS)</li>
+          <li>Compute pool <code>TSS_SNOWDAY_POOL</code> for notebooks. <b>Each participant uses one node</b>, so size it for about 50 people</li>
+          <li><code>CORTEX_USER</code>, <code>CORTEX_AGENT_USER</code>, <code>COPILOT_USER</code></li>
+          <li><code>CORTEX-MODEL-ROLE-ALL</code>, required for Dynamic Table refreshes that use AI</li>
+          <li>Cross-region inference set to <code>ANY_REGION</code></li>
+          <li>CoWork object grants, if your account has one</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Check before the event</h4>
+        <pre>SHOW SNOWFLAKE INTELLIGENCES;          -- CoWork object present?
+SHOW COMPUTE POOLS LIKE 'TSS_SNOWDAY%';
+SHOW GRANTS TO ROLE TSS_SNOWDAY_LAB_ROLE;</pre>
+        <div class="dl-row">
+          <a class="btn btn-outline" href="files/00_admin_setup_snowday.sql" download>Download admin setup (.sql)</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq">
+    <h2><span class="num">05</span>Troubleshooting</h2>
+    <p class="sub">These are the issues we hit while testing the labs.</p>
+    <details>
+      <summary>"no models available for function AI_REDACT under given RBAC and CROSS_REGION settings"</summary>
+      The role that owns the Dynamic Table needs explicit model access. An admin runs <code>GRANT APPLICATION ROLE SNOWFLAKE."CORTEX-MODEL-ROLE-ALL" TO ROLE &lt;lab role&gt;;</code> and checks that cross-region inference is enabled.
+    </details>
+    <details>
+      <summary>My agent works in Snowsight but doesn't show up in CoWork</summary>
+      Your account has a CoWork object. Run section 5.1 of Lab 1; it adds the agent to that object. If it fails with a privilege error, ask your admin for <code>MODIFY</code> on <code>SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT</code>.
+    </details>
+    <details>
+      <summary>The notebook won't start, or says no compute pool is available</summary>
+      Your role needs <code>USAGE</code> on a compute pool, and the pool needs a free node. Ask your admin; the setup script creates <code>TSS_SNOWDAY_POOL</code>.
+    </details>
+    <details>
+      <summary>I don't see the Cortex Code icon</summary>
+      Cortex Code must be enabled for your account and role. Your admin can check the CoCo Admin page in Snowsight.
+    </details>
+    <details>
+      <summary>An AI cell has been running for 2 minutes</summary>
+      That is normal: it is calling an LLM for every row. Building SILVER and ENRICHED takes 1 to 3 minutes.
+    </details>
+    <details>
+      <summary>I fell behind</summary>
+      Run the <b>reference cells</b> of each section in order. Every reference cell produces the result that the Cortex Code prompt should produce.
+    </details>
+    <details>
+      <summary>How do I clean up after the lab?</summary>
+      Uncomment and run the last cell (<b>teardown</b>) of your notebook. It drops your schema and, in Lab 1, your agent.
+    </details>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div><b>Snowflake × Triple-S</b> · Snow Day · November 17, 2026</div>
+    <div>Prepared by Juan Camilo Villarreal, Solutions Engineer · <a href="https://github.com/juancv3d/triple-s-snowday-labs">GitHub</a></div>
+  </div>
+</footer>
+
+</body>
+</html>
