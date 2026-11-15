@@ -234,15 +234,15 @@
   <!-- Before you start -->
   <section id="before">
     <h2><span class="num">03</span>Before you start</h2>
-    <p class="sub">Check these before the lab begins. If something is missing, tell a Snowflake SE in the room.</p>
+    <p class="sub">You get your own Snowflake account and you are its <code>ACCOUNTADMIN</code>. The notebook sets up everything it needs: there is no extra code to run.</p>
     <div class="grid">
       <div class="card">
         <h4>Your access</h4>
         <ul class="check">
           <li>You claimed your lab account at <a href="https://go.dataops.live/triple-s-snowday/register">go.dataops.live/triple-s-snowday/register</a></li>
           <li>You can log in to Snowsight</li>
-          <li>Your default role is the lab role your admin created (for example <code>TSS_SNOWDAY_LAB_ROLE</code>)</li>
-          <li>You can use the lab warehouse <code>TSS_SNOWDAY_WH</code> and the notebook compute pool</li>
+          <li>Your role is <code>ACCOUNTADMIN</code> (the lab account is yours)</li>
+          <li>You see the default compute pool <code>SYSTEM_COMPUTE_POOL_CPU</code> when you connect the notebook</li>
           <li>You see the <b>Cortex Code</b> icon in the lower-right corner of Snowsight</li>
         </ul>
       </div>
@@ -250,7 +250,7 @@
         <h4>What you need to know</h4>
         <ul class="check">
           <li><b>All data is synthetic.</b> No real member or provider data is used.</li>
-          <li>Each lab creates its own schema for you: <code>TSS_SNOWDAY.LAB1_&lt;USER&gt;</code> or <code>LAB2_&lt;USER&gt;</code></li>
+          <li>The first cell creates the warehouse <code>TSS_SNOWDAY_WH</code> and the schema <code>TSS_SNOWDAY.LAB1</code> or <code>LAB2</code>, and turns on cross-region AI</li>
           <li>Setup cells are safe to re-run</li>
           <li>AI cells take 1 to 3 minutes. They are not stuck.</li>
         </ul>
@@ -271,7 +271,7 @@
       <li><b>Claim your Snowflake lab account</b> at <a href="https://go.dataops.live/triple-s-snowday/register">go.dataops.live/triple-s-snowday/register</a>. Then log in to Snowsight with the account details you receive. <b>All lab work happens in this account.</b></li>
       <li><b>Download</b> the notebook for your lab from this page, or from <a href="https://github.com/juancv3d/triple-s-snowday-labs">GitHub</a>.</li>
       <li>In Snowsight, go to <b>Projects » Workspaces</b>. Select <b>+ Add New → Upload Files</b> and choose the <code>.ipynb</code> file. <span class="note">(Alternative: <b>From Git repository</b> with the GitHub URL.)</span></li>
-      <li>Open the notebook and <b>connect it</b>: choose the compute pool your admin gave you and the query warehouse <code>TSS_SNOWDAY_WH</code>.</li>
+      <li>Open the notebook and <b>connect it</b>: choose the compute pool <code>SYSTEM_COMPUTE_POOL_CPU</code> and any warehouse (the first cell creates and switches to <code>TSS_SNOWDAY_WH</code>).</li>
       <li>Run the first two code cells (<code>setup_session</code> and <code>load_data</code> / <code>load_bronze</code>). You should see <i>"Your lab schema: TSS_SNOWDAY.LAB…"</i> and the row counts.</li>
       <li>Open <b>Cortex Code</b> (lower-right icon) next to the notebook and start Section 1.</li>
     </ol>
@@ -445,53 +445,25 @@
     </ul>
   </section>
 
-  <!-- Admin -->
-  <section id="admin">
-    <h2><span class="num">04</span>For Snowflake admins</h2>
-    <p class="sub">Run once, as <code>ACCOUNTADMIN</code>, before the event. The full script is in the repo.</p>
-    <div class="grid-2">
-      <div class="card">
-        <h4>What the setup script creates</h4>
-        <ul class="check">
-          <li>Role <code>TSS_SNOWDAY_LAB_ROLE</code>, database <code>TSS_SNOWDAY</code>, warehouse <code>TSS_SNOWDAY_WH</code> (XS)</li>
-          <li>Compute pool <code>TSS_SNOWDAY_POOL</code> for notebooks. <b>Each participant uses one node</b>, so size it for about 50 people</li>
-          <li><code>CORTEX_USER</code>, <code>CORTEX_AGENT_USER</code>, <code>COPILOT_USER</code></li>
-          <li><code>CORTEX-MODEL-ROLE-ALL</code>, required for Dynamic Table refreshes that use AI</li>
-          <li>Cross-region inference set to <code>ANY_REGION</code></li>
-          <li>CoWork object grants, if your account has one</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h4>Check before the event</h4>
-        <pre>SHOW SNOWFLAKE INTELLIGENCES;          -- CoWork object present?
-SHOW COMPUTE POOLS LIKE 'TSS_SNOWDAY%';
-SHOW GRANTS TO ROLE TSS_SNOWDAY_LAB_ROLE;</pre>
-        <div class="dl-row">
-          <a class="btn btn-outline" href="files/00_admin_setup_snowday.sql" download>Download admin setup (.sql)</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- FAQ -->
   <section id="faq">
-    <h2><span class="num">05</span>Troubleshooting</h2>
+    <h2><span class="num">04</span>Troubleshooting</h2>
     <p class="sub">These are the issues we hit while testing the labs.</p>
     <details>
       <summary>"no models available for function AI_REDACT under given RBAC and CROSS_REGION settings"</summary>
-      The role that owns the Dynamic Table needs explicit model access. An admin runs <code>GRANT APPLICATION ROLE SNOWFLAKE."CORTEX-MODEL-ROLE-ALL" TO ROLE &lt;lab role&gt;;</code> and checks that cross-region inference is enabled.
+      Re-run the first cell (<code>setup_session</code>). It switches to <code>ACCOUNTADMIN</code>, which has access to every model, and enables cross-region inference.
     </details>
     <details>
       <summary>My agent works in Snowsight but doesn't show up in CoWork</summary>
-      Your account has a CoWork object. Run section 5.1 of Lab 1; it adds the agent to that object. If it fails with a privilege error, ask your admin for <code>MODIFY</code> on <code>SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT</code>.
+      Run section 5.1 of Lab 1. If your account has a CoWork object, that cell adds the agent to it. Then refresh CoWork.
     </details>
     <details>
-      <summary>The notebook won't start, or says no compute pool is available</summary>
-      Your role needs <code>USAGE</code> on a compute pool, and the pool needs a free node. Ask your admin; the setup script creates <code>TSS_SNOWDAY_POOL</code>.
+      <summary>The notebook won't start</summary>
+      Make sure you selected the compute pool <code>SYSTEM_COMPUTE_POOL_CPU</code> when connecting the notebook. The first start can take 1 to 2 minutes while the notebook service starts.
     </details>
     <details>
       <summary>I don't see the Cortex Code icon</summary>
-      Cortex Code must be enabled for your account and role. Your admin can check the CoCo Admin page in Snowsight.
+      Reload Snowsight. If it still does not appear, ask a Snowflake SE in the room.
     </details>
     <details>
       <summary>An AI cell has been running for 2 minutes</summary>
@@ -503,7 +475,7 @@ SHOW GRANTS TO ROLE TSS_SNOWDAY_LAB_ROLE;</pre>
     </details>
     <details>
       <summary>How do I clean up after the lab?</summary>
-      Uncomment and run the last cell (<b>teardown</b>) of your notebook. It drops your schema and, in Lab 1, your agent.
+      Uncomment and run the last cell (<b>teardown</b>) of your notebook. It drops the lab schema and, in Lab 1, your agent.
     </details>
   </section>
 
