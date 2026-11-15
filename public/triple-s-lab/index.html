@@ -63,6 +63,12 @@
     .btn-primary:hover { background: #1fa3d4; }
     .btn-ghost { border-color: rgba(255,255,255,.6); color: #fff; }
     .btn-ghost:hover { background: rgba(255,255,255,.1); }
+    .register { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+                background: rgba(255,255,255,.1); border: 2px solid var(--sf-orange); border-radius: 12px; padding: 16px 20px; margin: 0 0 22px; }
+    .register b { display: block; font-size: 1.05rem; }
+    .register span { opacity: .9; font-size: .93rem; }
+    .btn-register { background: var(--sf-orange); color: #1B1B1B; }
+    .btn-register:hover { background: #ffb361; }
     .btn-dark { background: light-dark(var(--sf-dark), var(--sf-blue)); color: #fff; }
 
     /* Sections */
@@ -156,6 +162,13 @@
       <span class="pill">2 labs · 90 min each</span>
       <span class="pill">100% synthetic data</span>
     </div>
+    <div class="register">
+      <div>
+        <b>Step 0: claim your Snowflake lab account</b>
+        <span>Everyone gets their own Snowflake account for the labs. Register before you start.</span>
+      </div>
+      <a class="btn btn-register" href="https://go.dataops.live/triple-s-snowday/register">Claim your lab account →</a>
+    </div>
     <div class="btns">
       <a class="btn btn-primary" href="files/Lab1_Ghost_Providers_Agent.ipynb" download>Download Lab 1 (.ipynb)</a>
       <a class="btn btn-primary" href="files/Lab2_Medicare_Appeals_AI_Pipeline.ipynb" download>Download Lab 2 (.ipynb)</a>
@@ -226,6 +239,7 @@
       <div class="card">
         <h4>Your access</h4>
         <ul class="check">
+          <li>You claimed your lab account at <a href="https://go.dataops.live/triple-s-snowday/register">go.dataops.live/triple-s-snowday/register</a></li>
           <li>You can log in to Snowsight</li>
           <li>Your default role is the lab role your admin created (for example <code>TSS_SNOWDAY_LAB_ROLE</code>)</li>
           <li>You can use the lab warehouse <code>TSS_SNOWDAY_WH</code> and the notebook compute pool</li>
@@ -254,6 +268,7 @@
 
     <h3>How to open a lab in Snowflake</h3>
     <ol class="steps">
+      <li><b>Claim your Snowflake lab account</b> at <a href="https://go.dataops.live/triple-s-snowday/register">go.dataops.live/triple-s-snowday/register</a>. Then log in to Snowsight with the account details you receive. <b>All lab work happens in this account.</b></li>
       <li><b>Download</b> the notebook for your lab from this page, or from <a href="https://github.com/juancv3d/triple-s-snowday-labs">GitHub</a>.</li>
       <li>In Snowsight, go to <b>Projects » Workspaces</b>. Select <b>+ Add New → Upload Files</b> and choose the <code>.ipynb</code> file. <span class="note">(Alternative: <b>From Git repository</b> with the GitHub URL.)</span></li>
       <li>Open the notebook and <b>connect it</b>: choose the compute pool your admin gave you and the query warehouse <code>TSS_SNOWDAY_WH</code>.</li>
