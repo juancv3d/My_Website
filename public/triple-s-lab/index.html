@@ -318,6 +318,11 @@
         <li><b>Act.</b> Build the cleanup worklist and see how many complaints come from ghost providers.</li>
       </ol>
 
+      <div class="aha" style="margin-top:22px">
+        <strong>Your turn + optional advanced challenge</strong>
+        Each section ends with a <b>Your turn</b> question that has no reference answer: you solve it with Cortex Code and the notebook checks it. Finished early? Try the <b>optional advanced challenge</b>: add member complaints to the semantic view and get your agent to find the Medicare Advantage ghost providers with 2 or more complaints. A validation cell tells you when you're done.
+      </div>
+
       <details>
         <summary>Lab 1 timing by section</summary>
         <div class="table-wrap"><table>
@@ -396,6 +401,11 @@
         <li><b>Go incremental.</b> Add the 20 new appeals, refresh, and check <code>REFRESH_ACTION = INCREMENTAL</code> and <code>ROWS_INSERTED = 20</code>.</li>
         <li><b>GOLD.</b> Build the SLA and overturn views, and look at today's at-risk queue.</li>
       </ol>
+
+      <div class="aha" style="margin-top:22px">
+        <strong>Your turn + optional advanced challenge</strong>
+        Each section ends with a <b>Your turn</b> question that has no reference answer: you solve it with Cortex Code and the notebook checks it. Finished early? Try the <b>optional advanced challenge</b>: build a better classifier in a new incremental Dynamic Table that reaches <b>98% accuracy</b> against a clinical answer key. A validation cell tells you when you're done.
+      </div>
 
       <details>
         <summary>Lab 2 timing by section</summary>
@@ -501,7 +511,11 @@
     </details>
     <details>
       <summary>I fell behind</summary>
-      Run the <b>reference cells</b> of each section in order. They produce the same result as the Cortex Code prompts.
+      Run the <b>reference cells</b> of each section in order. They produce the same result as the Cortex Code prompts. You can skip a <b>Your turn</b> question and come back to it later.
+    </details>
+    <details>
+      <summary>"Your turn" says "not yet"</summary>
+      Check the exact question (count vs. rate, published vs. all providers). For text answers, type the value exactly as it appears in the data, for example <code>"Medical Necessity"</code>.
     </details>
     <details>
       <summary>How do I clean up?</summary>
