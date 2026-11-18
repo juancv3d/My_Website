@@ -226,11 +226,11 @@
       </div>
       <div class="start-card">
         <span class="n">2</span>
-        <h3>Download your lab</h3>
-        <p>One notebook file. Not sure which lab is yours? See <a href="#labs" style="color:#fff">Choose your lab</a>.</p>
+        <h3>Pick your lab</h3>
+        <p>Read what you will build, then download the notebook from your lab's section.</p>
         <div class="actions">
-          <a class="btn btn-lab1" href="files/Lab1_Ghost_Providers_Agent.ipynb" download>Lab 1</a>
-          <a class="btn btn-lab2" href="files/Lab2_Medicare_Appeals_AI_Pipeline.ipynb" download>Lab 2</a>
+          <a class="btn btn-lab1" href="#lab1">Lab 1 →</a>
+          <a class="btn btn-lab2" href="#lab2">Lab 2 →</a>
         </div>
       </div>
       <div class="start-card">
@@ -547,6 +547,14 @@
       t.addEventListener('click', function () {
         show(t.dataset.lab, false);
         history.replaceState(null, '', '#lab' + t.dataset.lab);
+      });
+    });
+    document.querySelectorAll('a[href="#lab1"], a[href="#lab2"]').forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        var lab = a.getAttribute('href').slice(4);
+        show(lab, true);
+        history.replaceState(null, '', '#lab' + lab);
       });
     });
     var m = location.hash.match(/^#lab([12])$/);

@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ISM Snow Day · Labs prácticos con Cortex Code</title>
+  <meta name="description" content="Dos labs en notebooks de Snowflake para ISM: un asistente financiero para gerencia (20 min) y un agente comercial multipaís con AI Functions (90 min).">
+  <meta property="og:title" content="ISM Snow Day · Labs prácticos con Cortex Code">
+  <meta property="og:description" content="Reclame su cuenta, descargue su lab y siga las instrucciones paso a paso.">
+  <meta property="og:url" content="https://juancamilo.dev/ism-lab/">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="/favicon.svg">
+  <style>
+    :root {
+      color-scheme: light dark;
+      --sf-blue: #29B5E8;
+      --sf-mid: #11567F;
+      --sf-dark: #102E46;
+      --sf-star: #75CDD7;
+      --sf-orange: #FF9F36;
+      --lab1: #29B5E8;
+      --lab2: #FF9F36;
+      --bg: light-dark(#F7FAFC, #0B1A28);
+      --surface: light-dark(#FFFFFF, #12263A);
+      --surface-2: light-dark(#EEF6FB, #183049);
+      --text: light-dark(#1B2A3A, #E6EEF5);
+      --muted: light-dark(#5A6B7B, #9DB0C2);
+      --border: light-dark(#DCE6EE, #24405C);
+      --code-bg: light-dark(#F1F5F9, #0A1622);
+      --link: light-dark(#11567F, #75CDD7);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+           background: var(--bg); color: var(--text); line-height: 1.6; font-size: 17px; }
+    img, svg { max-width: 100%; height: auto; }
+    a { color: var(--link); }
+    p, li { max-width: 72ch; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .86em; background: var(--code-bg);
+           padding: 1px 6px; border-radius: 4px; overflow-wrap: anywhere; }
+    .wrap { max-width: 1080px; width: 100%; margin: 0 auto; padding: 0 clamp(16px, 4vw, 32px); }
+
+    /* ---------- Hero ---------- */
+    .hero { background: linear-gradient(135deg, var(--sf-dark) 0%, var(--sf-mid) 60%, #1A7FB0 100%); color: #fff; padding: 22px 0 48px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .logos { display: flex; align-items: center; gap: 14px; }
+    .logos .sf { height: 32px; width: auto; }
+    .logos .sep { opacity: .5; font-size: 1.5rem; font-weight: 200; }
+    .logos .client { background: #fff; border-radius: 8px; padding: 6px 12px; display: inline-flex; }
+    .logos .client img { height: 24px; width: auto; }
+    .logos .client.txt { color: #C8102E; font-weight: 900; letter-spacing: .02em; font-size: 1.05rem; padding: 4px 12px; }
+    .logos .client.txt small { color: #1E7B34; font-weight: 700; margin-left: 6px; font-size: .78rem; }
+    .topnav { display: flex; gap: 18px; flex-wrap: wrap; font-size: .92rem; }
+    .topnav a { color: #fff; opacity: .85; text-decoration: none; }
+    .topnav a:hover { opacity: 1; text-decoration: underline; }
+    .hero h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1.1; margin: 40px 0 12px; letter-spacing: -.02em; }
+    .hero h1 span { color: var(--sf-blue); }
+    .hero .lead { font-size: clamp(1.02rem, 2vw, 1.18rem); opacity: .92; margin: 0 0 18px; }
+    .meta { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 30px; }
+    .pill { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.25); padding: 4px 12px; border-radius: 999px; font-size: .86rem; }
+
+    /* Start here: 3 steps */
+    .start-title { font-size: .8rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--sf-star); margin: 0 0 12px; }
+    .start { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+    .start-card { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.22); border-radius: 14px; padding: 18px;
+                  display: flex; flex-direction: column; gap: 10px; }
+    .start-card .n { width: 34px; height: 34px; border-radius: 50%; background: #fff; color: var(--sf-dark); font-weight: 800;
+                     display: grid; place-items: center; }
+    .start-card h3 { margin: 0; font-size: 1.12rem; }
+    .start-card p { margin: 0; font-size: .92rem; opacity: .9; }
+    .start-card .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; }
+    .start-card.first { border: 2px solid var(--sf-orange); }
+    .extra-links { margin-top: 14px; font-size: .9rem; opacity: .9; }
+    .extra-links a { color: #fff; }
+
+    /* Buttons */
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 16px; border-radius: 8px; font-weight: 700;
+           text-decoration: none; font-size: .93rem; border: 2px solid transparent; cursor: pointer; font-family: inherit;
+           transition: transform .1s, filter .15s; }
+    .btn:hover { transform: translateY(-1px); filter: brightness(1.06); }
+    .btn-orange { background: var(--sf-orange); color: #1B1B1B; }
+    .btn-lab1 { background: var(--lab1); color: #fff; }
+    .btn-lab2 { background: var(--lab2); color: #1B1B1B; }
+    .btn-white { background: #fff; color: var(--sf-dark); }
+
+    /* ---------- Sections ---------- */
+    section { padding: 52px 0 8px; scroll-margin-top: 12px; }
+    h2 { font-size: clamp(1.45rem, 3vw, 1.9rem); margin: 0 0 6px; letter-spacing: -.01em; }
+    h3 { font-size: 1.15rem; margin: 26px 0 10px; }
+    .sub { color: var(--muted); margin: 0 0 22px; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
+
+    /* Lab tabs */
+    .tabs { display: flex; gap: 10px; flex-wrap: wrap; margin: 0 0 22px; }
+    .tab { flex: 1 1 260px; text-align: left; background: var(--surface); border: 2px solid var(--border); border-radius: 14px;
+           padding: 14px 16px; cursor: pointer; font: inherit; color: inherit; display: flex; flex-direction: column; gap: 2px; }
+    .tab .tag { font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+    .tab b { font-size: 1.05rem; }
+    .tab small { color: var(--muted); }
+    .tab[data-lab="1"][aria-selected="true"] { border-color: var(--lab1); box-shadow: inset 0 0 0 1px var(--lab1); }
+    .tab[data-lab="2"][aria-selected="true"] { border-color: var(--lab2); box-shadow: inset 0 0 0 1px var(--lab2); }
+    .tab[data-lab="1"] .tag { color: light-dark(#0E7FB0, var(--lab1)); }
+    .tab[data-lab="2"] .tag { color: light-dark(#A35A00, var(--lab2)); }
+    .lab-panel { --lab: var(--lab1); border-top: 5px solid var(--lab); background: var(--surface); border-radius: 16px;
+                 border-left: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+                 padding: clamp(18px, 3.5vw, 32px); }
+    .lab-panel.lab2 { --lab: var(--lab2); }
+    .js .lab-panel[hidden] { display: none; }
+    .lab-panel + .lab-panel { margin-top: 28px; }
+    .lab-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; flex-wrap: wrap; }
+    .lab-head h2 { margin-top: 4px; }
+    .lab-tag { font-size: .75rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--lab); }
+    .lab2 .lab-tag { color: light-dark(#A35A00, var(--lab2)); }
+    .lab1 .lab-tag { color: light-dark(#0E7FB0, var(--lab1)); }
+    .who { color: var(--muted); font-size: .95rem; margin: 4px 0 0; }
+
+    /* Problem / Build / Result */
+    .pbr { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); margin: 20px 0; }
+    .pbr > div { background: var(--surface-2); border-radius: 12px; padding: 16px; border-top: 3px solid var(--lab); }
+    .pbr h4 { margin: 0 0 6px; font-size: .78rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+    .pbr p { margin: 0; font-size: .96rem; }
+    .aha { background: light-dark(#EAF7FD, #0F3550); border-left: 4px solid var(--lab); border-radius: 10px; padding: 14px 18px; margin: 18px 0; }
+    .lab2 .aha { background: light-dark(#FFF6EA, #2E2312); }
+    .aha strong:first-child { display: block; margin-bottom: 4px; }
+    .flow { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; margin: 12px 0; }
+    .flow .step { flex: 1 1 140px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; font-size: .88rem; }
+    .flow .step b { display: block; color: var(--lab); }
+    .lab1 .flow .step b { color: light-dark(#0E7FB0, var(--lab1)); }
+    .lab2 .flow .step b { color: light-dark(#A35A00, var(--lab2)); }
+    .flow .arrow { align-self: center; color: var(--lab); font-weight: 800; }
+
+    /* Steps */
+    ol.steps { counter-reset: s; list-style: none; padding: 0; margin: 12px 0; }
+    ol.steps > li { counter-increment: s; position: relative; padding: 0 0 18px 50px; max-width: none; }
+    ol.steps > li::before { content: counter(s); position: absolute; left: 0; top: -2px; width: 32px; height: 32px; border-radius: 50%;
+                            background: var(--lab, var(--sf-blue)); color: #fff; font-weight: 800; display: grid; place-items: center; }
+    .lab2 ol.steps > li::before { color: #1B1B1B; }
+    ol.steps > li:not(:last-child)::after { content: ""; position: absolute; left: 15px; top: 32px; bottom: 0; width: 2px; background: var(--border); }
+    #setup ol.steps > li::before { background: var(--sf-blue); }
+
+    /* Copyable prompt */
+    .prompt { position: relative; background: var(--code-bg); border: 1px dashed var(--lab, var(--sf-blue)); border-radius: 10px;
+              padding: 34px 14px 12px; margin: 10px 0; }
+    .prompt::before { content: "Prompt para Cortex Code"; position: absolute; top: 9px; left: 14px; font-size: .7rem; font-weight: 800;
+                      text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+    .prompt pre { margin: 0; font-family: ui-monospace, Menlo, monospace; font-size: .86rem; line-height: 1.5; white-space: pre-wrap; }
+    .copy { position: absolute; top: 6px; right: 6px; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border);
+            background: var(--surface); color: inherit; font: inherit; font-size: .78rem; font-weight: 700; cursor: pointer; }
+    .copy:hover { border-color: var(--lab, var(--sf-blue)); }
+    .copy.done { background: #1E9E5A; color: #fff; border-color: #1E9E5A; }
+
+    /* Collapsibles */
+    details { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; margin: 10px 0; }
+    .lab-panel details { background: var(--surface-2); border-color: transparent; }
+    details summary { cursor: pointer; font-weight: 700; }
+    details[open] summary { margin-bottom: 10px; }
+    ul.clean { padding-left: 20px; margin: 6px 0; }
+    ul.clean li { margin: 5px 0; }
+    .table-wrap { overflow-x: auto; }
+    table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+    th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { font-weight: 700; white-space: nowrap; }
+    td.t { white-space: nowrap; font-weight: 700; }
+
+    /* Habits */
+    .habits { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+    .habit { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
+    .habit .hn { font-size: 1.4rem; font-weight: 800; color: var(--sf-blue); line-height: 1; }
+    .habit b { display: block; margin: 6px 0 4px; }
+    .habit i { color: var(--muted); font-size: .88rem; }
+
+    /* Agenda timeline */
+    .timeline { list-style: none; padding: 0; margin: 0; border-left: 3px solid var(--border); }
+    .timeline li { position: relative; padding: 0 0 16px 22px; max-width: none; }
+    .timeline li::before { content: ""; position: absolute; left: -9px; top: 6px; width: 15px; height: 15px; border-radius: 50%;
+                           background: var(--surface); border: 3px solid var(--sf-blue); }
+    .timeline li.lab::before { background: var(--sf-blue); }
+    .timeline .time { font-weight: 800; color: var(--link); font-size: .92rem; }
+    .timeline .what { display: block; font-weight: 600; }
+    .timeline .desc { display: block; color: var(--muted); font-size: .9rem; }
+    .two-col { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); align-items: start; }
+    ul.check { list-style: none; padding: 0; margin: 4px 0; }
+    ul.check li { padding-left: 28px; position: relative; margin: 8px 0; }
+    ul.check li::before { content: "✓"; position: absolute; left: 0; top: 2px; width: 19px; height: 19px; border-radius: 50%;
+                          background: var(--sf-blue); color: #fff; font-size: .72rem; display: grid; place-items: center; font-weight: 800; }
+
+    footer { margin-top: 64px; background: var(--sf-dark); color: #CFE3F1; padding: 28px 0; font-size: .9rem; }
+    footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: center; }
+    footer a { color: #fff; }
+    @media (max-width: 600px) { .topnav { display: none; } .logos .client.txt small { display: none; } .logos .sf { height: 26px; } .hero h1 { margin-top: 28px; } body { font-size: 16px; }
+      .flow { display: grid; grid-template-columns: 1fr 1fr; } .flow .arrow { display: none; } }
+  </style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="topbar">
+      <div class="logos">
+        <img class="sf" src="snowflake_logo_white.png" alt="Snowflake">
+        <span class="sep">|</span>
+        <span class="client txt">ISM<small>Industrias San Miguel</small></span>
+      </div>
+      <nav class="topnav" aria-label="Secciones">
+        <a href="#labs">Labs</a>
+        <a href="#setup">Abrir en Snowflake</a>
+        <a href="#info">Antes de empezar</a>
+        <a href="#faq">Ayuda</a>
+      </nav>
+    </div>
+
+    <h1>Snow Day: <span>Cortex Code</span><br>Labs prácticos</h1>
+    <p class="lead">Use Cortex Code y la IA de Snowflake para responder las preguntas del cierre del mes y explicar por qué cambian las ventas.</p>
+    <div class="meta">
+      <span class="pill">Oficinas de ISM · Santo Domingo Oeste</span>
+      <span class="pill">Su propia cuenta de Snowflake</span>
+      <span class="pill">Datos 100% sintéticos</span>
+    </div>
+
+    <p class="start-title">Empiece aquí</p>
+    <div class="start">
+      <div class="start-card first">
+        <span class="n">1</span>
+        <h3>Reclame su cuenta</h3>
+        <p>Cada persona recibe su propia cuenta de Snowflake. Usted es su ACCOUNTADMIN.</p>
+        <div class="actions"><a class="btn btn-orange" href="https://go.dataops.live/ism-snowday/register">Reclamar cuenta →</a></div>
+      </div>
+      <div class="start-card">
+        <span class="n">2</span>
+        <h3>Elija su lab</h3>
+        <p>Lea qué va a construir y descargue el notebook desde la sección de su lab.</p>
+        <div class="actions">
+          <a class="btn btn-lab1" href="#lab1">Lab 1 · Gerentes →</a>
+          <a class="btn btn-lab2" href="#lab2">Lab 2 · Técnico →</a>
+        </div>
+      </div>
+      <div class="start-card">
+        <span class="n">3</span>
+        <h3>Ábralo en Snowflake</h3>
+        <p>Súbalo a Workspaces y ejecute la primera celda. Ella prepara todo.</p>
+        <div class="actions"><a class="btn btn-white" href="#setup">Ver cómo →</a></div>
+      </div>
+    </div>
+    <p class="extra-links">También: <a href="https://github.com/juancv3d/ism-snowday-labs">repositorio en GitHub</a> · <a href="https://github.com/juancv3d/ism-snowday-labs/archive/refs/heads/main.zip">descargar los dos labs (.zip)</a></p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section id="labs">
+    <h2>Elija su lab</h2>
+    <p class="sub">Seleccione su lab para ver solo lo que necesita.</p>
+
+    <div class="tabs" role="tablist" aria-label="Labs">
+      <button class="tab" role="tab" data-lab="1" id="tab-lab1" aria-controls="lab1" aria-selected="true">
+        <span class="tag">Lab 1 · Gerentes · 20 min · sin SQL</span>
+        <b>Pregúntele a sus números</b>
+        <small>Gerencia, Finanzas, Planeamiento, Comercial</small>
+      </button>
+      <button class="tab" role="tab" data-lab="2" id="tab-lab2" aria-controls="lab2" aria-selected="false">
+        <span class="tag">Lab 2 · Técnico · 90 min · SQL</span>
+        <b>Del dato crudo al agente comercial</b>
+        <small>Ingeniería de datos, Analítica, BI, Desarrollo Comercial</small>
+      </button>
+    </div>
+
+    <article class="lab-panel lab1" id="lab1" role="tabpanel" aria-labelledby="tab-lab1">
+      <div class="lab-head">
+        <div>
+          <span class="lab-tag">Lab 1 · Gerentes · 20 min</span>
+          <h2>Pregúntele a sus números: el Asistente Financiero ISM</h2>
+          <p class="who">No necesita SQL. Ejecuta 5 celdas y conversa con el asistente en CoWork.</p>
+        </div>
+        <a class="btn btn-lab1" href="files/Lab1_ISM_Gerentes_Asistente_Financiero.ipynb" download>Descargar Lab 1</a>
+      </div>
+
+      <div class="pbr">
+        <div><h4>El problema</h4><p>Cada cierre de mes, gerencia hace las mismas preguntas: <b>ventas, margen, EBITDA, descuentos y bonificaciones, inventario y caja</b>. Cada respuesta requiere pedir un reporte, esperar y cruzar archivos.</p></div>
+        <div><h4>Lo que construye</h4><p>Un <b>modelo semántico</b> con las definiciones de Finanzas (venta neta, margen, EBITDA) y un <b>agente de IA</b> en CoWork que responde en español.</p></div>
+        <div><h4>El resultado</h4><p>Las <b>9 preguntas del cierre</b>, respondidas en segundos, por sociedad, categoría, canal o cliente, con cifras que cuadran.</p></div>
+      </div>
+
+      <div class="flow">
+        <div class="step"><b>Preparar</b>Datos de 5 sociedades</div><span class="arrow">→</span>
+        <div class="step"><b>Definir</b>Venta neta, margen, EBITDA</div><span class="arrow">→</span>
+        <div class="step"><b>Agente</b>Publicado en CoWork</div><span class="arrow">→</span>
+        <div class="step"><b>Preguntar</b>Las 9 del cierre</div>
+      </div>
+
+      <div class="aha">
+        <strong>El momento clave</strong>
+        La IA acierta porque <b>el negocio definió las reglas</b>: "ventas" es la venta neta, y el EBITDA excluye depreciación, intereses e impuestos. Cada respuesta se puede comparar con una celda que calcula la cifra correcta.
+      </div>
+
+      <h3>Paso a paso</h3>
+      <ol class="steps">
+        <li><b>Prepare</b> (5 min). Ejecute las 5 celdas de la sección 1. Crean los datos, el modelo semántico y el agente, y lo publican en CoWork.</li>
+        <li><b>Abra <a href="https://ai.snowflake.com">CoWork</a></b> y elija <i>Asistente Financiero ISM</i>.</li>
+        <li><b>Haga las preguntas de gerencia</b> (12 min). Por ejemplo:
+          <div class="prompt"><button class="copy" type="button">Copiar</button><pre>¿Cuál es el resultado del mes y el EBITDA por sociedad?</pre></div>
+          <div class="prompt"><button class="copy" type="button">Copiar</button><pre>¿Cuánto representan los descuentos y bonificaciones en el mes actual?</pre></div>
+          <div class="prompt"><button class="copy" type="button">Copiar</button><pre>¿Qué productos o clientes tuvieron la mayor caída en ventas frente al mes anterior?</pre></div>
+          <div class="prompt"><button class="copy" type="button">Copiar</button><pre>¿Cuáles fueron las entradas y salidas de efectivo del mes, por concepto?</pre></div>
+          El notebook trae las 9 preguntas completas.</li>
+        <li><b>Compare</b> (3 min) con las celdas de respuestas esperadas y pida un resumen ejecutivo:
+          <div class="prompt"><button class="copy" type="button">Copiar</button><pre>Prepárame un resumen ejecutivo del cierre del mes para el comité de gerencia: ventas, margen, EBITDA por sociedad, descuentos y bonificaciones, inventario y caja. Incluye 3 alertas y 3 recomendaciones.</pre></div></li>
+      </ol>
+
+      <details>
+        <summary>Las 9 preguntas del lab</summary>
+        <ol class="clean">
+          <li>¿Cuál es el margen por producto, categoría o canal?</li>
+          <li>¿Cuál es el resultado del mes y el EBITDA por sociedad?</li>
+          <li>¿Cuánto representan los descuentos y bonificaciones en el mes actual?</li>
+          <li>¿Cuánto vendimos este mes por sociedad, categoría de producto y cliente?</li>
+          <li>¿Cuáles fueron las entradas y salidas de efectivo del mes?</li>
+          <li>¿Qué productos o clientes tuvieron la mayor caída en ventas?</li>
+          <li>¿Cuál es el resultado del mes (ingresos, costos, gastos y utilidad)?</li>
+          <li>¿Cuál es el valor del inventario por sociedad y tipo de material?</li>
+          <li>¿Cuáles fueron las entradas y salidas de efectivo del mes, por concepto?</li>
+        </ol>
+      </details>
+      <details>
+        <summary>Tenga en cuenta</summary>
+        <ul class="clean">
+          <li>Todos los montos están en <b>USD</b>, consolidados desde 5 sociedades: Dominicana, Guatemala, Haití, Perú y Chile.</li>
+          <li>"Este mes" es el mes en curso, tratado como cierre preliminar.</li>
+          <li>Cada respuesta del asistente tarda entre 10 y 30 segundos.</li>
+        </ul>
+      </details>
+    </article>
+
+    <article class="lab-panel lab2" id="lab2" role="tabpanel" aria-labelledby="tab-lab2">
+      <div class="lab-head">
+        <div>
+          <span class="lab-tag">Lab 2 · Técnico · 90 min</span>
+          <h2>Del dato crudo al agente comercial multipaís</h2>
+          <p class="who">Para quienes escriben SQL. Cortex Code escribe la mayor parte; usted lo valida.</p>
+        </div>
+        <a class="btn btn-lab2" href="files/Lab2_ISM_Tecnico_Agente_Comercial.ipynb" download>Descargar Lab 2</a>
+      </div>
+
+      <div class="pbr">
+        <div><h4>El problema</h4><p>La venta neta de <b>Rayo Energy 473ml cayó 47% en ISM Dominicana</b>. El tablero dice cuánto, pero no por qué. El porqué está en <b>1,200 notas de visita</b> de los vendedores, en texto libre y en dos idiomas.</p></div>
+        <div><h4>Lo que construye</h4><p>Un <b>pipeline de IA incremental</b> que traduce, clasifica y extrae datos de las notas; un <b>modelo semántico</b> que cuadra con Finanzas; y un <b>agente comercial</b> para todos los países.</p></div>
+        <div><h4>El resultado</h4><p>Una respuesta que <b>cruza ventas con la voz del cliente</b>: la caída coincide con decenas de notas urgentes de quiebre de stock.</p></div>
+      </div>
+
+      <div class="flow">
+        <div class="step"><b>Notas</b>Texto libre, es + fr</div><span class="arrow">→</span>
+        <div class="step"><b>AI Functions</b>TRANSLATE · CLASSIFY · SENTIMENT · EXTRACT · FILTER</div><span class="arrow">→</span>
+        <div class="step"><b>Validar</b>Errores medidos → 0</div><span class="arrow">→</span>
+        <div class="step"><b>Modelo semántico</b>Venta neta oficial</div><span class="arrow">→</span>
+        <div class="step"><b>Agente</b>CoWork + evaluación</div>
+      </div>
+
+      <div class="aha">
+        <strong>Los momentos clave</strong>
+        <b>1.</b> La IA se equivoca en silencio: la traducción cambia el nombre de un producto, marcas propias aparecen como "competencia" y aparece "None" como si fuera una marca. Se miden y se llevan a <b>cero</b>.<br>
+        <b>2.</b> El primer modelo semántico reporta la venta <b>bruta</b>, y la diferencia con Finanzas es de millones. Se corrige en el modelo, no en el prompt.<br>
+        <b>3.</b> Con la Dynamic Table incremental, cada nota pasa por la IA <b>una sola vez</b>.
+      </div>
+
+      <h3>Paso a paso</h3>
+      <ol class="steps">
+        <li><b>Prepare</b> (5 min): ejecute <code>setup_session</code>, <code>load_data</code> y <code>check_helper</code>.</li>
+        <li><b>Explore la caída</b> con Cortex Code:
+          <div class="prompt"><button class="copy" type="button">Copiar</button><pre>Usando las tablas de ISM_SNOWDAY.LAB2, muéstrame la venta neta mensual en USD de Rayo Energy Lata 473ml en ISM Dominicana en los últimos 6 meses, con la variación contra el mes anterior.</pre></div></li>
+        <li><b>Prototipe la IA</b> sobre 10 notas:
+          <div class="prompt"><button class="copy" type="button">Copiar</button><pre>Para 10 notas de NOTAS_VISITA, tradúcelas al español si no lo están, clasifica el motivo en 6 categorías de negocio, saca el sentimiento y extrae la marca de la competencia.</pre></div></li>
+        <li><b>Llévela a producción</b> con una Dynamic Table incremental:
+          <div class="prompt"><button class="copy" type="button">Copiar</button><pre>Convierte el prototipo en una Dynamic Table incremental llamada NOTAS_ENRIQUECIDAS sobre todas las notas, con target lag de 1 día, que además marque si la nota requiere acción urgente con AI_FILTER.</pre></div></li>
+        <li><b>Valide la IA</b> con el reporte de calidad y corrija la v2:
+          <div class="prompt"><button class="copy" type="button">Copiar</button><pre>Corrige NOTAS_ENRIQUECIDAS: protege el nombre del producto durante AI_TRANSLATE, aclara en AI_EXTRACT que las marcas de ISM no son competencia y convierte 'None' en NULL. Mantén REFRESH_MODE = INCREMENTAL.</pre></div></li>
+        <li><b>Agregue un lote nuevo</b> de 100 notas y confirme que el refresco fue <code>INCREMENTAL</code>.</li>
+        <li><b>Corrija el modelo semántico</b> para que "ventas" sea la venta neta de Finanzas:
+          <div class="prompt"><button class="copy" type="button">Copiar</button><pre>En SV_COMERCIAL_ISM, define 'ventas' como la venta neta (USD_VALOR_NETO), deja la venta bruta como una métrica aparte y agrega margen, bonificaciones y la variación contra el mes anterior.</pre></div></li>
+        <li><b>Publique el agente</b> en CoWork y hágale la pregunta del inicio:
+          <div class="prompt"><button class="copy" type="button">Copiar</button><pre>¿Por qué cayeron las ventas de Rayo Energy Lata 473ml en ISM Dominicana este mes?</pre></div></li>
+        <li><b>Evalúelo</b> con preguntas de varios países, una de ellas en francés.</li>
+      </ol>
+
+      <div class="aha" style="margin-top:22px">
+        <strong>Su turno + reto opcional avanzado</strong>
+        Cada sección termina con una pregunta de <b>Su turno</b>, sin respuesta de referencia: usted la resuelve con Cortex Code y el notebook le dice si acertó. ¿Terminó antes? Intente el <b>reto opcional avanzado</b>: extienda el modelo semántico con el inventario MB52 y cree la métrica <b>días de cobertura</b> por sociedad. Una celda de validación le dice cuándo lo logró.
+      </div>
+
+      <details>
+        <summary>Tiempos del Lab 2 por sección</summary>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Min</th><th>Sección</th><th>Qué hace</th></tr></thead>
+          <tbody>
+            <tr><td class="t">0–5</td><td>1. Preparación</td><td>Cuenta, datos y 1,200 notas</td></tr>
+            <tr><td class="t">5–15</td><td>2. Explorar</td><td>La caída de Rayo y las notas</td></tr>
+            <tr><td class="t">15–25</td><td>3. Prototipo de IA</td><td>5 AI Functions sobre 10 notas</td></tr>
+            <tr><td class="t">25–33</td><td>4. Pipeline</td><td>Dynamic Table incremental</td></tr>
+            <tr><td class="t">33–48</td><td>5. Validar la IA</td><td>Reporte de calidad, v2</td></tr>
+            <tr><td class="t">48–55</td><td>6. Incremental</td><td>Lote nuevo, historial de refrescos</td></tr>
+            <tr><td class="t">55–67</td><td>7. Modelo semántico</td><td>v1 no cuadra con Finanzas, v2 sí</td></tr>
+            <tr><td class="t">67–77</td><td>8. Agente</td><td>CoWork y DATA_AGENT_RUN</td></tr>
+            <tr><td class="t">77–90</td><td>9. Evaluación</td><td>Preguntas multipaís y cierre</td></tr>
+          </tbody>
+        </table></div>
+      </details>
+      <details>
+        <summary>Tenga en cuenta</summary>
+        <ul class="clean">
+          <li><b>Los errores de la IA en la v1 son esperados.</b> Son la lección de la sección 5: no se salte el reporte de calidad.</li>
+          <li>Crear la Dynamic Table con IA tarda entre 2 y 4 minutos. No está trabada.</li>
+          <li>Las AI Functions se cobran por tokens. Revise las <a href="https://docs.snowflake.com/en/user-guide/snowflake-cortex/aisql-cost">tarifas vigentes</a>.</li>
+        </ul>
+      </details>
+    </article>
+  </section>
+
+  <section id="setup">
+    <h2>Abra su lab en Snowflake</h2>
+    <p class="sub">Todo está dentro del notebook. No hay otro código que ejecutar.</p>
+    <ol class="steps">
+      <li><b>Reclame su cuenta</b> en <a href="https://go.dataops.live/ism-snowday/register">go.dataops.live/ism-snowday/register</a> e inicie sesión en Snowsight.</li>
+      <li><b>Descargue</b> su notebook: <a href="files/Lab1_ISM_Gerentes_Asistente_Financiero.ipynb" download>Lab 1</a> o <a href="files/Lab2_ISM_Tecnico_Agente_Comercial.ipynb" download>Lab 2</a>.</li>
+      <li>En Snowsight vaya a <b>Projects » Workspaces</b> → <b>+ Add New</b> → <b>Upload Files</b> y elija el archivo <code>.ipynb</code>.</li>
+      <li>Abra el notebook y <b>conéctelo</b> al compute pool <code>SYSTEM_COMPUTE_POOL_CPU</code>. El primer arranque tarda 1 o 2 minutos.</li>
+      <li><b>Ejecute la primera celda.</b> Cambia a <code>ACCOUNTADMIN</code>, crea el warehouse <code>ISM_SNOWDAY_WH</code>, activa la IA entre regiones y crea su schema.</li>
+      <li>Abra <b>Cortex Code</b> (ícono en la esquina inferior derecha) y siga el notebook. Cada sección tiene un prompt para copiar y una <b>celda de referencia</b> por si se atrasa.</li>
+    </ol>
+
+    <h3>5 hábitos para trabajar con Cortex Code</h3>
+    <div class="habits">
+      <div class="habit"><span class="hn">1</span><b>Dé contexto</b><i>Nombre sus tablas, su rol y su objetivo.</i></div>
+      <div class="habit"><span class="hn">2</span><b>Pida un plan primero</b><i>"Antes de crear algo, muéstrame tu plan."</i></div>
+      <div class="habit"><span class="hn">3</span><b>Hable en términos de negocio</b><i>Diga la regla, no el SQL.</i></div>
+      <div class="habit"><span class="hn">4</span><b>Pida explicaciones</b><i>"Explícamelo como si no fuera técnico."</i></div>
+      <div class="habit"><span class="hn">5</span><b>Verifique e itere</b><i>"Esa cifra se ve baja. Revisa…"</i></div>
+    </div>
+  </section>
+
+  <section id="info">
+    <h2>Antes de empezar</h2>
+    <p class="sub">Lo que conviene saber.</p>
+    <ul class="check">
+      <li><b>Todos los datos son sintéticos.</b> Las tablas imitan la estructura de ISM (sociedades SAP, ventas, MB52), pero marcas, clientes y cifras son ficticios.</li>
+      <li><b>La cuenta es suya</b> y usted es ACCOUNTADMIN.</li>
+      <li><b>Las celdas se pueden volver a ejecutar</b> sin problema.</li>
+      <li><b>Las celdas de IA tardan de 1 a 4 minutos.</b> No están trabadas.</li>
+      <li><b>Lea lo que propone Cortex Code</b> antes de aprobarlo.</li>
+      <li>La última celda (limpieza) está comentada a propósito.</li>
+    </ul>
+  </section>
+
+  <section id="faq">
+    <h2>¿Necesita ayuda?</h2>
+    <p class="sub">Los problemas que encontramos en las pruebas. Si sigue trabado, levante la mano.</p>
+    <details><summary>El notebook no arranca</summary>Verifique que eligió el compute pool <code>SYSTEM_COMPUTE_POOL_CPU</code> al conectarlo. El primer arranque tarda 1 o 2 minutos.</details>
+    <details><summary>"no models available for function … under given RBAC and CROSS_REGION settings"</summary>Vuelva a ejecutar la primera celda (<code>setup_session</code>). Cambia a <code>ACCOUNTADMIN</code> y activa la IA entre regiones.</details>
+    <details><summary>Mi agente no aparece en CoWork</summary>Ejecute la celda que publica el agente en CoWork (<code>add_to_cowork</code> en el Lab 1 o <code>publicar_en_cowork</code> en el Lab 2) y recargue CoWork.</details>
+    <details><summary>No veo el ícono de Cortex Code</summary>Recargue Snowsight. Si sigue sin aparecer, pídale ayuda a un SE de Snowflake en la sala.</details>
+    <details><summary>Me atrasé</summary>Ejecute en orden las <b>celdas de referencia</b> de cada sección. Producen el mismo resultado que los prompts de Cortex Code. Puede saltarse una pregunta de <b>Su turno</b> y volver después.</details>
+    <details><summary>"Su turno" dice "todavía no"</summary>Revise la pregunta exacta (sociedad, periodo, conteo o monto). Para respuestas de texto, escriba el valor tal como aparece en los datos, por ejemplo <code>"Quiebre de stock"</code>.</details>
+    <details><summary>¿Cómo limpio mi cuenta?</summary>Quite el comentario y ejecute la última celda (limpieza) de su notebook.</details>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div><b>Snowflake × ISM</b> · Snow Day</div>
+    <div>Preparado por Juan Camilo Villarreal, Solutions Engineer · <a href="https://github.com/juancv3d/ism-snowday-labs">GitHub</a></div>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    document.documentElement.classList.add('js');
+    var tabs = document.querySelectorAll('.tab');
+    var panels = { '1': document.getElementById('lab1'), '2': document.getElementById('lab2') };
+    function show(lab, scroll) {
+      tabs.forEach(function (t) { t.setAttribute('aria-selected', String(t.dataset.lab === lab)); });
+      Object.keys(panels).forEach(function (k) { panels[k].hidden = k !== lab; });
+      if (scroll) document.getElementById('labs').scrollIntoView({ behavior: 'smooth' });
+    }
+    tabs.forEach(function (t) {
+      t.addEventListener('click', function () {
+        show(t.dataset.lab, false);
+        history.replaceState(null, '', '#lab' + t.dataset.lab);
+      });
+    });
+    document.querySelectorAll('a[href="#lab1"], a[href="#lab2"]').forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        var lab = a.getAttribute('href').slice(4);
+        show(lab, true);
+        history.replaceState(null, '', '#lab' + lab);
+      });
+    });
+    var m = location.hash.match(/^#lab([12])$/);
+    show(m ? m[1] : '1', !!m);
+  })();
+
+  document.querySelectorAll('.prompt .copy').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var text = btn.parentElement.querySelector('pre').textContent;
+      function ok() { btn.textContent = 'Copiado'; btn.classList.add('done');
+        setTimeout(function () { btn.textContent = 'Copiar'; btn.classList.remove('done'); }, 1600); }
+      function fallback() {
+        var r = document.createRange(); r.selectNodeContents(btn.parentElement.querySelector('pre'));
+        var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+        btn.textContent = 'Presione Ctrl/Cmd+C';
+      }
+      if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(ok, fallback);
+      else fallback();
+    });
+  });
+</script>
+</body>
+</html>
