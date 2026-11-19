@@ -224,7 +224,7 @@
       <div class="start-card first">
         <span class="n">1</span>
         <h3>Reclame su cuenta</h3>
-        <p>Cada persona recibe su propia cuenta de Snowflake. Usted es su ACCOUNTADMIN.</p>
+        <p>Cada persona recibe su propia cuenta de Snowflake. En esa página <b>ignore las "Lab Instructions"</b>: presione el link de la cuenta, entre con su usuario y contraseña y vuelva aquí.</p>
         <div class="actions"><a class="btn btn-orange" href="https://go.dataops.live/ism-snowday/register">Reclamar cuenta →</a></div>
       </div>
       <div class="start-card">
@@ -419,9 +419,14 @@
     <h2>Abra su lab en Snowflake</h2>
     <p class="sub">Todo está dentro del notebook. No hay otro código que ejecutar.</p>
     <ol class="steps">
-      <li><b>Reclame su cuenta</b> en <a href="https://go.dataops.live/ism-snowday/register">go.dataops.live/ism-snowday/register</a> e inicie sesión en Snowsight.</li>
+      <li><b>Reclame su cuenta</b> en <a href="https://go.dataops.live/ism-snowday/register">go.dataops.live/ism-snowday/register</a>. Cuando le asignen la cuenta:
+        <ul class="clean">
+          <li><b>Ignore la sección "Lab Instructions"</b> de esa página: las instrucciones de este Snow Day son las de esta página.</li>
+          <li>Presione el <b>link de su cuenta de Snowflake</b>.</li>
+          <li>Entre con el <b>usuario y la contraseña</b> que le muestra la página.</li>
+        </ul></li>
       <li><b>Descargue</b> su notebook: <a href="files/Lab1_ISM_Gerentes_Asistente_Financiero.ipynb" download>Lab 1</a> o <a href="files/Lab2_ISM_Tecnico_Agente_Comercial.ipynb" download>Lab 2</a>.</li>
-      <li>En Snowsight vaya a <b>Projects » Workspaces</b> → <b>+ Add New</b> → <b>Upload Files</b> y elija el archivo <code>.ipynb</code>.</li>
+      <li>Ya dentro de Snowflake, entre a <b>Projects » Workspaces</b> (menú de la izquierda). Ahí presione <b>+ Add New</b> → <b>Upload Files</b> y elija el archivo <code>.ipynb</code>.</li>
       <li>Abra el notebook y <b>conéctelo</b> al compute pool <code>SYSTEM_COMPUTE_POOL_CPU</code>. El primer arranque tarda 1 o 2 minutos.</li>
       <li><b>Ejecute la primera celda.</b> Cambia a <code>ACCOUNTADMIN</code>, crea el warehouse <code>ISM_SNOWDAY_WH</code>, activa la IA entre regiones y crea su schema.</li>
       <li>Abra <b>Cortex Code</b> (ícono en la esquina inferior derecha) y siga el notebook. Cada sección tiene un prompt para copiar y una <b>celda de referencia</b> por si se atrasa.</li>
